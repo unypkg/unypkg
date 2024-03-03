@@ -84,4 +84,5 @@ fi
 cd /uny/git || exit
 git clone -b release https://github.com/unypkg/unypkg
 
+chmod +x /uny/git/unypkg/bin/unyp
 ln -s /uny/git/unypkg/bin/unyp /bin/unyp
