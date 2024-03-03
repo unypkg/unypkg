@@ -1,7 +1,22 @@
 #!/usr/bin/env bash
 
+# Check to be root
 if [[ $EUID -gt 0 ]]; then
     echo "This needs to be run as root user. Not root, exiting..."
+    exit
+fi
+
+# Check if git is installed
+git --version 2>&1 >/dev/null
+git_installed=$?
+if [[ ! $git_installed -eq 0 ]]; then
+    echo "Git has to be installed. Exiting..."
+    exit
+fi
+
+# Check if /uny folder already exists
+if [[ -d /uny ]]; then
+    echo "/uny folder already exists. Exiting..."
     exit
 fi
 
@@ -57,5 +72,16 @@ chmod +x /bin/unyc
 
 ##############################################################################################################
 # Making and populating the /uny subfolder
-mkdir /uny
+mkdir -pv /uny/git
 cd /uny || exit
+
+if [[ "$1" == "buildsys" ]]; then
+    base_release_url="$(curl -Ls -o /dev/null -w "%{url_effective}" https://github.com/unypkg/base/releases/latest)"
+    base_download_url="$(echo "$base_release_url" | sed -e "s|/tag/|/download/|" -e "s|\([^/]*$\)|\1/unypkg-base-\1.tar.xz|")"
+    curl -s -L "$base_download_url" | tar xvJ
+fi
+
+cd /uny/git || exit
+git clone -b release https://github.com/unypkg/unypkg
+
+ln -s /uny/git/unypkg/bin/unyp /bin/unyp
