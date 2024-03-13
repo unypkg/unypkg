@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+cat <<EOF
+
+Mounting virtual file systems and entering uny's chroot
+
+#######################################################
+### Welcome to uny's chroot ###########################
+#######################################################
+
+EOF
+mount --bind /dev $UNY/dev         #>/dev/null
+mount --bind /dev/pts $UNY/dev/pts #>/dev/null
+mount -t proc proc $UNY/proc       #>/dev/null
+mount -t sysfs sysfs $UNY/sys      #>/dev/null
+mount -t tmpfs tmpfs $UNY/run      #>/dev/null
+
+if [ -h $UNY/dev/shm ]; then
+    mkdir -pv $UNY/"$(readlink $UNY/dev/shm)"
+else
+    mount -t tmpfs -o nosuid,nodev tmpfs $UNY/dev/shm
+fi
+
+UNY_PATH="$(cat /uny/uny/paths/bin):$(cat /uny/uny/paths/sbin):/usr/bin:/usr/sbin"
+chroot "$UNY" /usr/bin/env -i \
+    HOME=/uny/root \
+    TERM="$TERM" \
+    PS1='uny | \u:\w\$ ' \
+    PATH="$UNY_PATH" \
+    bash --login
+
+cat <<EOF
+
+Exited uny's chroot and unmounting virtual file systems
+
+#######################################################
+### See you soon ######################################
+#######################################################
+
+EOF
+
+mountpoint -q $UNY/dev/shm && umount $UNY/dev/shm
+umount $UNY/dev/pts
+umount $UNY/{sys,proc,run,dev}
