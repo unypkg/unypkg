@@ -14,6 +14,14 @@ if [[ ! $git_installed -eq 0 ]]; then
     exit
 fi
 
+# Check if wget is installed
+wget --version 2>&1 >/dev/null
+wget_installed=$?
+if [[ ! $wget_installed -eq 0 ]]; then
+    echo "wget has to be installed. Exiting..."
+    exit
+fi
+
 # Check if /uny folder already exists
 if [[ -d /uny ]]; then
     echo "/uny folder already exists. Exiting..."
@@ -24,9 +32,9 @@ mkdir -pv /uny/git
 cd /uny || exit
 
 if [[ "$1" == "buildsys" ]]; then
-    base_release_url="$(curl -Ls -o /dev/null -w "%{url_effective}" https://github.com/unypkg/base/releases/latest)"
+    base_release_url="$(wget -q --server-response https://github.com/unypkg/base/releases/latest -O- 2>&1 | grep "Location" | sed "s|  Location: ||")"
     base_download_url="$(echo "$base_release_url" | sed -e "s|/tag/|/download/|" -e "s|\([^/]*$\)|\1/unypkg-base-\1.tar.xz|")"
-    curl -s -L "$base_download_url" | tar xvJ
+    wget --show-progress "$base_download_url" -O- | tar xvJ
 fi
 
 cd /uny/git || exit
