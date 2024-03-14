@@ -44,4 +44,4 @@ chmod +x /uny/git/unypkg/bin/unyp
 ln -fs /uny/git/unypkg/bin/unyp /bin/unyp
 
 chmod +x /uny/git/unypkg/bin/unyc
-ln -fs /uny/git/unypkg/bin/unyp /bin/unyc
+ln -fs /uny/git/unypkg/bin/unyc /bin/unyc
