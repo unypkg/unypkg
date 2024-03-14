@@ -41,7 +41,7 @@ cd /uny/git || exit
 git clone -b release https://github.com/unypkg/unypkg
 
 chmod +x /uny/git/unypkg/bin/unyp
-ln -s /uny/git/unypkg/bin/unyp /bin/unyp
+ln -fs /uny/git/unypkg/bin/unyp /bin/unyp
 
 chmod +x /uny/git/unypkg/bin/unyc
-ln -s /uny/git/unypkg/bin/unyp /bin/unyc
+ln -fs /uny/git/unypkg/bin/unyp /bin/unyc
