@@ -34,7 +34,8 @@ cd /uny || exit
 if [[ "$1" == "buildsys" ]]; then
     base_release_url="$(wget -q --server-response https://github.com/unypkg/base/releases/latest -O- 2>&1 | grep "Location" | sed "s|  Location: ||")"
     base_download_url="$(echo "$base_release_url" | sed -e "s|/tag/|/download/|" -e "s|\([^/]*$\)|\1/unypkg-base-\1.tar.xz|")"
-    wget --show-progress "$base_download_url" -O- | tar xJ
+    echo "Downloading unypkg base system. Please wait."
+    wget -q "$base_download_url" -O- | tar xJ
 fi
 
 cd /uny/git || exit
