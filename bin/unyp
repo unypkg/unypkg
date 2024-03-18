@@ -1,3 +1,48 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1091
 
-echo "This is unyp"
+source help
+
+function update_unypkg {
+    git -C /uny/git/unypkg reset --hard HEAD
+    git -C /uny/git/unypkg pull
+    chmod +x /uny/git/unypkg/bin/{unyp,unyc}
+}
+
+function install_packages {
+    packages=("$@")
+    for pkg in "${packages[@]}"; do
+        release_url="$(wget -q --server-response https://github.com/unypkg/"$pkg"/releases/latest -O- 2>&1 | grep "Location" | sed "s|  Location: ||")"
+        download_url="${release_url//\/tag\//\/download\/}/unypkg-$pkg.tar.xz"
+        echo "Downloading $pkg"
+        wget -q "$download_url" -O- | tar xJ -C /uny/pkg
+
+        # Add to paths files
+        for usrpath in /uny/pkg/"$pkg"/*/!(vdet|rdep); do
+            pkgver="$(echo "$usrpath" | sed -e "s|.*$pkg/||" -e "s|/.*||")"
+            pathtype="$(basename "$usrpath")"
+            [[ ! -f /uny/uny/paths/$pathtype ]] && touch /uny/uny/paths/"$pathtype"
+            if grep -q "/$pkg/[^/:]*" /uny/uny/paths/"$pathtype"; then
+                sed "s+/$pkg/[^/:]*+/$pkg/$pkgver+" -i /uny/uny/paths/"$pathtype"
+            else
+                [[ ! $pkg == "glibc" ]] && delim=":" || delim=""
+                echo -n "$delim/uny/pkg/$pkg/$pkgver/$pathtype" >>/uny/uny/paths/"$pathtype"
+            fi
+        done
+    done
+}
+
+function list_packages {
+    ls /uny/pkg/*
+}
+
+if [[ $1 =~ (i|inst|install) ]]; then
+    shift
+    install_packages "$@"
+elif [[ $1 =~ (l|ls|list) ]]; then
+    list_packages "$@"
+elif [[ $1 =~ (u|upd|update) ]]; then
+    update_unypkg
+else
+    print_help_unyp
+fi

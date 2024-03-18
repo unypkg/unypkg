@@ -7,7 +7,7 @@ if [[ $EUID -gt 0 ]]; then
 fi
 
 # Check if git is installed
-git --version 2>&1 >/dev/null
+git --version >/dev/null 2>&1
 git_installed=$?
 if [[ ! $git_installed -eq 0 ]]; then
     echo "Git has to be installed. Exiting..."
@@ -15,7 +15,7 @@ if [[ ! $git_installed -eq 0 ]]; then
 fi
 
 # Check if wget is installed
-wget --version 2>&1 >/dev/null
+wget --version >/dev/null 2>&1
 wget_installed=$?
 if [[ ! $wget_installed -eq 0 ]]; then
     echo "wget has to be installed. Exiting..."
@@ -34,15 +34,13 @@ cd /uny || exit
 if [[ "$1" == "buildsys" ]]; then
     base_release_url="$(wget -q --server-response https://github.com/unypkg/base/releases/latest -O- 2>&1 | grep "Location" | sed "s|  Location: ||")"
     base_download_url="$(echo "$base_release_url" | sed -e "s|/tag/|/download/|" -e "s|\([^/]*$\)|\1/unypkg-base-\1.tar.xz|")"
-    echo "Downloading unypkg base system. Please wait."
+    echo "Downloading unypkg base system. Please wait. (30 sec +)"
     wget -q "$base_download_url" -O- | tar xJ
 fi
 
 cd /uny/git || exit
 git clone -b release https://github.com/unypkg/unypkg
 
-chmod +x /uny/git/unypkg/bin/unyp
+chmod +x /uny/git/unypkg/bin/{unyp,unyc}
 ln -fs /uny/git/unypkg/bin/unyp /bin/unyp
-
-chmod +x /uny/git/unypkg/bin/unyc
 ln -fs /uny/git/unypkg/bin/unyc /bin/unyc
