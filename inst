@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+### Install with wget -qO- uny.nu/pkg | bash -s buildsys
+
 # Check to be root
 if [[ $EUID -gt 0 ]]; then
     echo "This needs to be run as root user. Not root, exiting..."
