@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1091
 
-pwd
-source help
+shopt -s extglob
+source /uny/git/unypkg/help
 
 function update_unypkg {
     git -C /uny/git/unypkg reset --hard HEAD
