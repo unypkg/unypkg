@@ -30,7 +30,7 @@ if [[ -d /uny ]]; then
     exit
 fi
 
-mkdir -pv /uny/git
+mkdir -pv /uny/{git,pkg}
 cd /uny || exit
 
 if [[ "$1" == "buildsys" ]]; then

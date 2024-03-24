@@ -15,7 +15,7 @@ function install_packages {
     for pkg in "${packages[@]}"; do
         release_url="$(wget -q --server-response https://github.com/unypkg/"$pkg"/releases/latest -O- 2>&1 | grep "Location" | sed "s|  Location: ||")"
         download_url="${release_url//\/tag\//\/download\/}/unypkg-$pkg.tar.xz"
-        echo "Downloading $pkg"
+        echo "Downloading and installing: $pkg"
         wget -q "$download_url" -O- | tar xJ -C /uny/pkg
 
         # Add to paths files
