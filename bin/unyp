@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1091
 
+pwd
 source help
 
 function update_unypkg {
