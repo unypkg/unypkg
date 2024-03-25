@@ -9,11 +9,11 @@ Mounting virtual file systems and entering uny's chroot
 #######################################################
 
 EOF
-mount --bind /dev /uny/dev        #>/dev/null
-mount --bind /dev/pts /unydev/pts #>/dev/null
-mount -t proc proc /uny/proc      #>/dev/null
-mount -t sysfs sysfs /uny/sys     #>/dev/null
-mount -t tmpfs tmpfs /uny/run     #>/dev/null
+mount --bind /dev /uny/dev         #>/dev/null
+mount --bind /dev/pts /uny/dev/pts #>/dev/null
+mount -t proc proc /uny/proc       #>/dev/null
+mount -t sysfs sysfs /uny/sys      #>/dev/null
+mount -t tmpfs tmpfs /uny/run      #>/dev/null
 
 if [ -h /uny/dev/shm ]; then
     mkdir -pv /uny/"$(readlink /uny/dev/shm)"
