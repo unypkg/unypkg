@@ -3,6 +3,7 @@
 
 shopt -s extglob
 source /uny/git/unypkg/help
+source /uny/git/unypkg/fn
 
 function update_unypkg {
     git -C /uny/git/unypkg reset --hard HEAD
