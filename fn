@@ -1,6 +1,232 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC1091,SC2154
+# shellcheck disable=SC1091,SC2154,SC2086
 
+#############################################################################################################################
+### Get pkg-config search paths
+### Used in unyc
+function get_pkgconfig_paths {
+    for pc in /uny/pkg/*/*/*/pkgconfig; do
+        if [ -z "$PKG_CONFIG_PATH" ]; then
+            export PKG_CONFIG_PATH="$pc"
+        else
+            export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$pc"
+        fi
+    done
+}
+
+#############################################################################################################################
+### General unypkg functions
+function uny_build_date {
+    # new vdet date information
+    uny_build_date_seconds_now="$(date +%s)"
+    uny_build_date_now="$(date -d @"$uny_build_date_seconds_now" +"%Y-%m-%dT%H.%M.%SZ")"
+}
+
+function uny_auto_github_conf {
+    ### Setup Git and GitHub in GitHub Actions
+    git config --global user.name "uny-auto"
+    git config --global user.email "uny-auto@unyqly.com"
+    git config --global credential.helper store
+    git config --global advice.detachedHead false
+
+    git credential approve <<EOF
+protocol=https
+url=https://github.com
+username=uny-auto
+password="$UNY_AUTO_PAT"
+EOF
+}
+
+#############################################################################################################################
+### In chroot functions
+function uny_env_paths {
+    PATH="$(cat /uny/paths/bin):$(cat /uny/paths/sbin):/usr/bin:/usr/sbin"
+    export PATH
+
+    glib_path=(/uny/pkg/glibc/*)
+    export LOCPATH="${glib_path[0]}/lib/locale"
+    export I18NPATH="${glib_path[0]}/share/i18n"
+}
+
+#############################################################################################################################
+### Stage 1 download functions
+function check_for_repo_and_create {
+    # Create repo if it doesn't exist
+    if [[ $(curl -s -o /dev/null -w "%{http_code}" https://github.com/unypkg/"$pkgname") != "200" ]]; then
+        gh repo create unypkg/"$pkgname" --public
+        [[ ! -d unygit ]] && mkdir -v unygit
+        git -C unygit clone https://github.com/unypkg/"$pkgname".git
+        touch unygit/"$pkgname"/emptyfile
+        git -C unygit/"$pkgname" add .
+        git -C unygit/"$pkgname" commit -m "Make repo non-empty"
+        git -C unygit/"$pkgname" push origin
+    fi
+}
+
+function git_clone_source_repo {
+    # shellcheck disable=SC2001
+    pkg_head="$(echo "$latest_head" | sed "s|.*refs/[^/]*/||")"
+    pkg_git_repo="$(echo "$pkggit" | cut --fields=1 --delimiter=" ")"
+    pkg_git_repo_dir="$(basename "$pkg_git_repo" | cut -d. -f1)"
+    [[ -d "$pkg_git_repo_dir" ]] && rm -rf "$pkg_git_repo_dir"
+    # shellcheck disable=SC2086
+    git clone $gitdepth --single-branch -b "$pkg_head" "$pkg_git_repo"
+}
+
+function check_if_newer_version {
+    # Download last vdet file
+    curl -LO https://github.com/unypkg/"$pkgname"/releases/latest/download/vdet
+    old_commit_id="$(sed '2q;d' vdet)"
+    uny_build_date_seconds_old="$(sed '4q;d' vdet)"
+    [[ $latest_commit_id == "" ]] && latest_commit_id="$latest_ver"
+
+    # pkg will be built, if commit id is different and newer.
+    # Before a pkg is built the existence of a build-"$pkgname" file is checked
+    if [[ "$latest_commit_id" != "$old_commit_id" && "$uny_build_date_seconds_now" -gt "$uny_build_date_seconds_old" ]]; then
+        echo "newer" >release-"$pkgname"
+    fi
+}
+
+function version_details {
+    {
+        echo "$latest_ver"
+        echo "$latest_commit_id"
+        echo "$uny_build_date_now"
+        echo "$uny_build_date_seconds_now"
+    } >vdet-"$pkgname"
+    check_if_newer_version
+}
+
+function archiving_source {
+    rm -rf "$pkg_git_repo_dir"/.git "$pkg_git_repo_dir"/.git*
+    [[ -d "$pkgname-$latest_ver" ]] && rm -rf "$pkgname-$latest_ver"
+    mv -v "$pkg_git_repo_dir" "$pkgname-$latest_ver"
+    XZ_OPT="--threads=0" tar -cJpf "$pkgname-$latest_ver".tar.xz "$pkgname-$latest_ver"
+}
+
+function repo_clone_version_archive {
+    check_for_repo_and_create
+    git_clone_source_repo
+    version_details
+    archiving_source
+}
+
+#############################################################################################################################
+### Stage 1 chroot build functions
+function unpack_cd {
+    cd "$UNY"/sources/ || exit
+    [[ ! -d $(echo $pkgname* | grep -Eo "$pkgname-[^0-9]*(([0-9]+\.)*[0-9]+)" | sort -u) ]] && tar xf "$pkgname"*.tar.*
+    cd "$(echo $pkgname* | grep -Eo "$pkgname-[^0-9]*(([0-9]+\.)*[0-9]+)" | sort -u)" || exit
+}
+
+function cleanup {
+    cd "$UNY"/sources/ || exit
+    rm -rf "$(echo $pkgname* | grep -Eo "$pkgname-[^0-9]*(([0-9]+\.)*[0-9]+)" | sort -u)"
+}
+
+#############################################################################################################################
+### Stage 2 chroot build functions
+function add_to_paths_files {
+    for usrpath in /uny/pkg/"$pkgname"/"$pkgver"/*; do
+        pathtype=$(basename "$usrpath")
+        [[ ! -f /uny/paths/$pathtype ]] && touch /uny/paths/"$pathtype"
+        if grep -q "/$pkgname/[^/:]*" /uny/paths/"$pathtype"; then
+            sed "s+/$pkgname/[^/:]*+/$pkgname/$pkgver+" -i /uny/paths/"$pathtype"
+        else
+            [[ ! $pkgname == "glibc" ]] && delim=":" || delim=""
+            echo -n "$delim/uny/pkg/$pkgname/$pkgver/$pathtype" >>/uny/paths/"$pathtype"
+        fi
+    done
+    # shellcheck source=/dev/null
+    source /uny/paths/pathenv
+}
+
+function remove_from_paths_files {
+    if [[ -d /uny/pkg/$pkgname/$pkgver ]]; then
+        for usrpath in /uny/pkg/"$pkgname"/"$pkgver"/*; do
+            pathtype=$(basename "$usrpath")
+            if grep -q "/$pkgname/[^/:]*" /uny/paths/"$pathtype"; then
+                sed -z -e "s|:.[^:]*$pkgname/[^:]*||" -e "s/\n//g" -i /uny/paths/"$pathtype"
+            fi
+        done
+        # shellcheck source=/dev/null
+        source /uny/paths/pathenv
+    fi
+}
+
+function version_verbose_log_clean_unpack_cd {
+    SECONDS=0
+    shopt -s nocaseglob
+    pkgver="$(echo /sources/$pkgname*.tar* | sed "s/$pkgname//" | sed -nre 's/^[^0-9]*(([0-9]+\.)*[0-9]+).*/\1/p')"
+    [[ ! -d /uny/build/logs ]] && mkdir /uny/build/logs
+    LOG_FILE=/uny/build/logs/"$pkgname-$pkgver"-unypkg-build-$(date -u +"%Y-%m-%dT%H.%M.%SZ").log
+    exec 3>&1 4>&2
+    trap 'exec 2>&4 1>&3' 0 1 2 3 15
+    exec > >(tee "$LOG_FILE") 2>&1
+    set -vx
+    # shellcheck disable=SC2269
+    pkgname="$pkgname"
+    # shellcheck disable=SC2269
+    pkgver="$pkgver"
+
+    remove_from_paths_files
+    rm -rf /uny/pkg/"$pkgname"/"$pkgver"
+    rm -rf /sources/"$pkgname"*"$pkgver"
+    cd /sources || exit
+    tar xf "$pkgname"*.tar.*
+    cd "$(echo $pkgname* | grep -Eio "$pkgname.[^0-9]*(([0-9]+\.)*[0-9]+)" | sort -u)" || exit
+}
+
+function get_env_var_values {
+    libpath="$(cat /uny/paths/lib):/uny/pkg/$pkgname/$pkgver/lib"
+    LIBRARY_PATH="$libpath" # Used during linking
+    export LIBRARY_PATH
+    ldflags="-Wl,-rpath=$libpath -Wl,--dynamic-linker=$(grep -o "^.*glibc/[^:]*" /uny/paths/lib)/ld-linux-x86-64.so.2" # Used at runtime
+    export LDFLAGS="$ldflags"
+    LD_RUN_PATH=$libpath # Used at runtime
+    export LD_RUN_PATH
+}
+
+function get_include_paths_temp {
+    C_INCLUDE_PATH="$(cat /uny/paths/include-c-base):$(cat /uny/paths/include)"
+    export C_INCLUDE_PATH
+    CPLUS_INCLUDE_PATH="$(cat /uny/paths/include-cplus-base):$(cat /uny/paths/include)"
+    export CPLUS_INCLUDE_PATH
+}
+
+function get_include_paths {
+    C_INCLUDE_PATH="$(cat /uny/paths/include)"
+    export C_INCLUDE_PATH
+    CPLUS_INCLUDE_PATH="$(cat /uny/paths/include-cplus):$(cat /uny/paths/include)"
+    export CPLUS_INCLUDE_PATH
+}
+
+function dependencies_file_and_unset_vars {
+    for o in /uny/pkg/"$pkgname"/"$pkgver"/{lib,bin,sbin}/*; do
+        if [[ ! -L $o && -f $o ]]; then
+            echo "Shared objects required by: $o"
+            ldd "$o"
+            ldd "$o" | grep -v "$pkgname/$pkgver" | sed "s|^.*ld-linux.*||" | grep -o "uny/pkg\(.*\)" | sed -e "s+uny/pkg/+unypkg/+" | grep -Eo "(unypkg/[a-z0-9]+/[0-9.]*)" | sort -u >>/uny/pkg/"$pkgname"/"$pkgver"/rdep
+        fi
+    done
+    sort -u /uny/pkg/"$pkgname"/"$pkgver"/rdep -o /uny/pkg/"$pkgname"/"$pkgver"/rdep
+    echo "Packages required by unypkg/$pkgname/$pkgver:"
+    cat /uny/pkg/"$pkgname"/"$pkgver"/rdep
+
+    unset CPATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH LIBRARY_PATH LD_RUN_PATH LDFLAGS CFLAGS
+}
+
+function cleanup_verbose_off_timing_end {
+    rm -rf /sources/"$pkgname"*"$pkgver"
+    shopt -u nocaseglob
+    duration=$SECONDS
+    echo "$((duration / 60)) minutes and $((duration % 60)) seconds elapsed."
+    set +vx
+    exec 2>&4 1>&3
+}
+
+#############################################################################################################################
+### Packaging function for individually built packages
 function package_unypkg {
     cd /uny/pkg || exit
     for pkg in /uny/sources/release-*; do

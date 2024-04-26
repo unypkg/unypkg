@@ -30,19 +30,34 @@ if [[ -d /uny ]]; then
     exit
 fi
 
-mkdir -pv /uny/{git,pkg}
-cd /uny || exit
+# Create directories and symlinks
+mkdir -pv /uny/{git,pkg,uny,etc,tmp}
+mkdir -v /uny/uny/{paths,root}
+ln -sv /git /uny/uny/git
+ln -sv /pkg /uny/uny/pkg
+ln -sv /uny/etc /etc/uny
+ln -sv /etc /uny/etc/uny
 
+# Download base system if specified
+cd /uny || exit
 if [[ "$1" == "buildsys" ]]; then
     base_release_url="$(wget -q --server-response https://github.com/unypkg/base/releases/latest -O- 2>&1 | grep "Location" | sed "s|  Location: ||")"
     base_download_url="$(echo "$base_release_url" | sed -e "s|/tag/|/download/|" -e "s|\([^/]*$\)|\1/unypkg-base-\1.tar.xz|")"
-    echo "Downloading unypkg base system. Please wait. (30 sec +)"
+    echo "Downloading unypkg base system. Please wait."
     wget -q "$base_download_url" -O- | tar xJ
 fi
 
+# Download the unypkg script
 cd /uny/git || exit
 git clone -b release https://github.com/unypkg/unypkg
 
+# Make unyp and unyc available to the system
 chmod +x /uny/git/unypkg/bin/{unyp,unyc}
 ln -fs /uny/git/unypkg/bin/unyp /bin/unyp
 ln -fs /uny/git/unypkg/bin/unyc /bin/unyc
+
+# Set PATH and functions on login in uny chroot
+tee /uny/uny/root/.profile <<'EOF'
+source /uny/git/unypkg/fn
+uny_env_paths
+EOF
