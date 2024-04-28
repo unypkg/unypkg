@@ -31,7 +31,7 @@ if [[ -d /uny ]]; then
 fi
 
 # Create directories and symlinks
-mkdir -pv /uny/{git,pkg,uny,etc,tmp}
+mkdir -pv /uny/{git,pkg,uny,etc,tmp,dev,proc,sys,run}
 mkdir -v /uny/uny/{paths,root}
 ln -sv /git /uny/uny/git
 ln -sv /pkg /uny/uny/pkg
