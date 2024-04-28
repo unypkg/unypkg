@@ -139,7 +139,7 @@ function add_to_paths_files {
         fi
     done
     # shellcheck source=/dev/null
-    source /uny/paths/pathenv
+    uny_env_paths
 }
 
 function remove_from_paths_files {
@@ -151,7 +151,7 @@ function remove_from_paths_files {
             fi
         done
         # shellcheck source=/dev/null
-        source /uny/paths/pathenv
+        uny_env_paths
     fi
 }
 
