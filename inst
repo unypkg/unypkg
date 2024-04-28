@@ -48,13 +48,17 @@ if [[ "$1" == "buildsys" ]]; then
 fi
 
 # Download the unypkg script
-cd /uny/git || exit
-git clone -b release https://github.com/unypkg/unypkg
+if [[ ! -d /uny/git/unypkg ]]; then
+    git -C /uny/git clone -b release https://github.com/unypkg/unypkg
+else
+    git -C /uny/git/unypkg reset --hard HEAD
+    git -C /uny/git/unypkg pull
+fi
 
 # Make unyp and unyc available to the system
 chmod +x /uny/git/unypkg/bin/{unyp,unyc}
-ln -fs /uny/git/unypkg/bin/unyp /bin/unyp
-ln -fs /uny/git/unypkg/bin/unyc /bin/unyc
+ln -sfv /uny/git/unypkg/bin/unyp /bin/unyp
+ln -sfv /uny/git/unypkg/bin/unyc /bin/unyc
 
 # Set PATH and functions on login in uny chroot
 tee /uny/uny/root/.profile <<'EOF'
