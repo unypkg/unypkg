@@ -65,3 +65,17 @@ tee /uny/uny/root/.profile <<'EOF'
 source /uny/git/unypkg/fn
 uny_env_paths
 EOF
+
+# Create shell skeleton if not there
+if [[ ! -f /uny/usr/bin/env ]]; then
+    mkdir -pv /uny/usr/bin
+    ln -sv /usr/bin /uny/bin
+    ln -sv /uny/pkg/coreutils/*/bin/env /uny/usr/bin/env
+
+    tee /uny/bin/bash <<'EOF'
+#!/usr/bin/env bash 
+exec bash "$@"
+EOF
+    chmod +x /uny/bin/bash
+    ln -sfv bash /uny/bin/sh
+fi
