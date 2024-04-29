@@ -50,7 +50,7 @@ if [[ "$1" == "buildsys" ]]; then
     if [[ ! -f /uny/paths/include-cplus ]]; then
         gcc_dir=(/uny/pkg/gcc/*)
         gcc_ver=$(basename "${gcc_dir[0]}")
-        echo -n "${gcc_dir[0]}/include:${gcc_dir[0]}/include/c++/$gcc_ver" >/uny/paths/include-cplus
+        echo -n "${gcc_dir[0]}/include:${gcc_dir[0]}/include/c++/$gcc_ver" >/uny/uny/paths/include-cplus
     fi
 fi
 
