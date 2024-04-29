@@ -72,10 +72,10 @@ if [[ ! -f /uny/usr/bin/env ]]; then
     ln -sv /usr/bin /uny/bin
     ln -sv /uny/pkg/coreutils/*/bin/env /uny/usr/bin/env
 
-    tee /uny/bin/bash <<'EOF'
+    tee /uny/usr/bin/bash <<'EOF'
 #!/usr/bin/env bash 
 exec bash "$@"
 EOF
-    chmod +x /uny/bin/bash
-    ln -sfv bash /uny/bin/sh
+    chmod +x /uny/usr/bin/bash
+    ln -sfv bash /uny/usr/bin/sh
 fi
