@@ -56,7 +56,7 @@ else
 fi
 
 # Make include-cplus file if it does not exist
-if [[ ! -f /uny/paths/include-cplus ]]; then
+if [[ ! -f /uny/uny/paths/include-cplus ]]; then
     gcc_dir=(/uny/pkg/gcc/*)
     gcc_ver=$(basename "${gcc_dir[0]}")
     echo -n "${gcc_dir[0]}/include:${gcc_dir[0]}/include/c++/$gcc_ver" >/uny/uny/paths/include-cplus
