@@ -45,13 +45,6 @@ if [[ "$1" == "buildsys" ]]; then
     base_download_url="$(echo "$base_release_url" | sed -e "s|/tag/|/download/|" -e "s|\([^/]*$\)|\1/unypkg-base-\1.tar.xz|")"
     echo "Downloading unypkg base system. Please wait."
     wget -q "$base_download_url" -O- | tar xJ
-
-    # Make include-cplus file if it does not exist
-    if [[ ! -f /uny/paths/include-cplus ]]; then
-        gcc_dir=(/uny/pkg/gcc/*)
-        gcc_ver=$(basename "${gcc_dir[0]}")
-        echo -n "${gcc_dir[0]}/include:${gcc_dir[0]}/include/c++/$gcc_ver" >/uny/uny/paths/include-cplus
-    fi
 fi
 
 # Download the unypkg script
@@ -60,6 +53,13 @@ if [[ ! -d /uny/git/unypkg ]]; then
 else
     git -C /uny/git/unypkg reset --hard HEAD
     git -C /uny/git/unypkg pull
+fi
+
+# Make include-cplus file if it does not exist
+if [[ ! -f /uny/paths/include-cplus ]]; then
+    gcc_dir=(/uny/pkg/gcc/*)
+    gcc_ver=$(basename "${gcc_dir[0]}")
+    echo -n "${gcc_dir[0]}/include:${gcc_dir[0]}/include/c++/$gcc_ver" >/uny/uny/paths/include-cplus
 fi
 
 # Make unyp and unyc available to the system
