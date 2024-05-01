@@ -67,16 +67,6 @@ chmod +x /uny/git/unypkg/bin/{unyp,unyc}
 ln -sfv /uny/git/unypkg/bin/unyp /bin/unyp
 ln -sfv /uny/git/unypkg/bin/unyc /bin/unyc
 
-# Which script
-if [[ ! -d /uny/pkg/which ]]; then
-    cat >/uny/usr/bin/which <<"EOF"
-#!/usr/bin/env bash
-type -pa "$@" | head -n 1 ; exit ${PIPESTATUS[0]}
-EOF
-    chmod -v 755 /uny/usr/bin/which
-    chown -v root:root /uny/usr/bin/which
-fi
-
 # Set PATH and functions on login in uny chroot
 tee /uny/uny/root/.profile <<'EOF'
 source /uny/git/unypkg/fn
@@ -95,4 +85,14 @@ exec bash "$@"
 EOF
     chmod +x /uny/usr/bin/bash
     ln -sfv bash /uny/usr/bin/sh
+fi
+
+# Which script
+if [[ ! -d /uny/pkg/which ]]; then
+    cat >/uny/usr/bin/which <<"EOF"
+#!/usr/bin/env bash
+type -pa "$@" | head -n 1 ; exit ${PIPESTATUS[0]}
+EOF
+    chmod -v 755 /uny/usr/bin/which
+    chown -v root:root /uny/usr/bin/which
 fi
