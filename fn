@@ -186,10 +186,10 @@ function get_env_var_values {
     export LDFLAGS="$ldflags"
     LD_RUN_PATH=$libpath # Used at runtime
     export LD_RUN_PATH
-    CFLAGS="-O2"
-    export CFLAGS
-    CXXFLAGS="${CFLAGS}"
-    export CXXFLAGS
+    #CFLAGS="-O2"
+    #export CFLAGS
+    #CXXFLAGS="${CFLAGS}"
+    #export CXXFLAGS
 }
 
 function get_include_paths_temp {
