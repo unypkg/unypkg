@@ -231,7 +231,15 @@ function cleanup_verbose_off_timing_end {
 }
 
 #############################################################################################################################
-### Packaging function for individually built packages
+### Stripping and packaging functions
+function binary_stripping {
+    for i in $(find /uny/pkg/*/*/lib -type f -name \*.so* ! -name \*dbg) \
+        $(find /uny/pkg/*/*/lib -type f -name \*.a) \
+        $(find /uny/pkg/*/*/{bin,sbin,libexec} -type f); do
+        strip --strip-unneeded $i
+    done
+}
+
 function package_unypkg {
     cd /uny/pkg || exit
     for pkg in /uny/sources/release-*; do
