@@ -241,6 +241,7 @@ function binary_stripping {
 }
 
 function package_unypkg {
+    binary_stripping
     cd /uny/pkg || exit
     for pkg in /uny/sources/release-*; do
         vdet_new_file="${pkg//release-/vdet-}"
