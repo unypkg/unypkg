@@ -134,7 +134,7 @@ function add_to_paths_files {
         if grep -q "/$pkgname/[^/:]*" /uny/paths/"$pathtype"; then
             sed "s+/$pkgname/[^/:]*+/$pkgname/$pkgver+" -i /uny/paths/"$pathtype"
         else
-            [[ ! $pkgname == "glibc" ]] && delim=":" || delim=""
+            [[ ! $pkgname == "gcc-shared" ]] && delim=":" || delim=""
             echo -n "$delim/uny/pkg/$pkgname/$pkgver/$pathtype" >>/uny/paths/"$pathtype"
         fi
     done
