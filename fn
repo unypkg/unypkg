@@ -40,12 +40,14 @@ EOF
 #############################################################################################################################
 ### In chroot functions
 function uny_env_paths {
-    PATH="$(cat /uny/paths/bin):$(cat /uny/paths/sbin):/usr/bin:/usr/sbin"
-    export PATH
+    if [[ -f /uny/paths/bin ]]; then
+        PATH="$(cat /uny/paths/bin):$(cat /uny/paths/sbin):/usr/bin:/usr/sbin"
+        export PATH
 
-    glib_path=(/uny/pkg/glibc/*)
-    export LOCPATH="${glib_path[0]}/lib/locale"
-    export I18NPATH="${glib_path[0]}/share/i18n"
+        glib_path=(/uny/pkg/glibc/*)
+        export LOCPATH="${glib_path[0]}/lib/locale"
+        export I18NPATH="${glib_path[0]}/share/i18n"
+    fi
 }
 
 #############################################################################################################################
