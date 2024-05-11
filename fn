@@ -213,7 +213,7 @@ function dependencies_file_and_unset_vars {
         if [[ ! -L $o && -f $o ]]; then
             echo "Shared objects required by: $o"
             ldd "$o"
-            ldd "$o" | grep -v "$pkgname/$pkgver" | sed "s|^.*ld-linux.*||" | grep -o "uny/pkg\(.*\)" | sed -e "s+uny/pkg/+unypkg/+" | grep -Eo "(unypkg/[a-z0-9]+/[0-9.]*)" | sort -u >>/uny/pkg/"$pkgname"/"$pkgver"/rdep
+            ldd "$o" | grep -v "$pkgname/$pkgver" | sed "s|^.*ld-linux.*||" | grep -o "uny/pkg\(.*\)" | sed -e "s+uny/pkg/+unypkg/+" | grep -Eo "(unypkg/[a-z0-9_-]+/[0-9.]*)" | sort -u >>/uny/pkg/"$pkgname"/"$pkgver"/rdep
         fi
     done
     sort -u /uny/pkg/"$pkgname"/"$pkgver"/rdep -o /uny/pkg/"$pkgname"/"$pkgver"/rdep
