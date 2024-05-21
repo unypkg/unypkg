@@ -217,6 +217,12 @@ function dependencies_file_and_unset_vars {
         fi
     done
     sort -u /uny/pkg/"$pkgname"/"$pkgver"/rdep -o /uny/pkg/"$pkgname"/"$pkgver"/rdep
+    if [[ -n ${manual_deps[*]} ]]; then
+        for mandep in "${manual_deps[@]}"; do
+            mandep_ver="$(basename /uny/pkg/"$mandep"/*)"
+            echo unypkg/"$mandep"/"$mandep_ver" >>/uny/pkg/"$pkgname"/"$pkgver"/rdep
+        done
+    fi
     echo "Packages required by unypkg/$pkgname/$pkgver:"
     cat /uny/pkg/"$pkgname"/"$pkgver"/rdep
 
