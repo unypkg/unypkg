@@ -55,12 +55,14 @@ function uny_env_paths {
 function check_for_repo_and_create {
     # Create repo if it doesn't exist
     if [[ $(curl -s -o /dev/null -w "%{http_code}" https://github.com/unypkg/"$pkgname") != "200" ]]; then
+        [[ ! -d unygit ]] && mkdir -v unygit && git -C unygit clone https://github.com/unypkg/pkg-repo-template.git
         gh repo create unypkg/"$pkgname" --public
-        [[ ! -d unygit ]] && mkdir -v unygit
         git -C unygit clone https://github.com/unypkg/"$pkgname".git
-        touch unygit/"$pkgname"/emptyfile
+        cp -av unygit/pkg-repo-template/* unygit/"$pkgname"/
+        mv -v unygit/"$pkgname"/unypkg-pkg-build.sh unygit/"$pkgname"/unypkg-"$pkgname"-build.sh
+        sed "s|unypkgx|$pkgname|g" -i unygit/"$pkgname"/unypkg-"$pkgname"-build.sh
         git -C unygit/"$pkgname" add .
-        git -C unygit/"$pkgname" commit -m "Make repo non-empty"
+        git -C unygit/"$pkgname" commit -m "Created unypkg repo with template unypkg/pkg-repo-template"
         git -C unygit/"$pkgname" push origin
     fi
 }
