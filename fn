@@ -26,15 +26,15 @@ function uny_auto_github_conf {
     ### Setup Git and GitHub in GitHub Actions
     git config --global user.name "uny-auto"
     git config --global user.email "uny-auto@unyqly.com"
-    git config --global credential.helper store
+    #git config --global credential.helper cache
     git config --global advice.detachedHead false
 
-    git credential approve <<EOF
-protocol=https
-url=https://github.com
-username=uny-auto
-password="$UNY_AUTO_PAT"
-EOF
+    #    git credential approve <<EOF
+    #protocol=https
+    #url=https://github.com
+    #username=uny-auto
+    #password="$UNY_AUTO_PAT"
+    #EOF
 }
 
 #############################################################################################################################
@@ -57,8 +57,9 @@ function check_for_repo_and_create {
     if [[ $(curl -s -o /dev/null -w "%{http_code}" https://github.com/unypkg/"$pkgname") != "200" ]]; then
         [[ ! -d unygit ]] && mkdir -v unygit && git -C unygit clone https://github.com/unypkg/pkg-repo-template.git
         gh repo create unypkg/"$pkgname" --public
-        git -C unygit clone https://github.com/unypkg/"$pkgname".git
-        cp -av unygit/pkg-repo-template/* unygit/"$pkgname"/
+        git -C unygit clone https://"$GH_TOKEN"@github.com/unypkg/"$pkgname".git
+        rm -rv unygit/pkg-repo-template/.git
+        cp -aTv unygit/pkg-repo-template/ unygit/"$pkgname"/
         mv -v unygit/"$pkgname"/unypkg-pkg-build.sh unygit/"$pkgname"/unypkg-"$pkgname"-build.sh
         sed "s|unypkgx|$pkgname|g" -i unygit/"$pkgname"/unypkg-"$pkgname"-build.sh
         git -C unygit/"$pkgname" add .
