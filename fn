@@ -54,7 +54,7 @@ function uny_env_paths {
 ### Stage 1 download functions
 function check_for_repo_and_create {
     # Create repo if it doesn't exist
-    if [[ $(curl -s -o /dev/null -w "%{http_code}" https://github.com/unypkg/"$pkgname") != "200" ]]; then
+    if [[ $(wget -q --server-response https://github.com/unypkg/"$pkgname" 2>&1 | grep HTTP | sed -e "s|[[:space:]]*HTTP/[0-9.]*[[:space:]]||" -e "s|[[:space:]]OK||") != 200 ]]; then
         [[ ! -d unygit ]] && mkdir -v unygit && git -C unygit clone https://github.com/unypkg/pkg-repo-template.git
         gh repo create unypkg/"$pkgname" --public
         git -C unygit clone https://"$GH_TOKEN"@github.com/unypkg/"$pkgname".git
