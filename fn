@@ -195,6 +195,8 @@ function get_env_var_values {
     export CFLAGS
     CXXFLAGS="${CFLAGS}"
     export CXXFLAGS
+    CMAKE_PREFIX_PATH="$(for i in /uny/pkg/*/*; do echo -n "$i:"; done)"
+    export CMAKE_PREFIX_PATH
 }
 
 function get_include_paths_temp {
