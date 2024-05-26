@@ -40,7 +40,8 @@ function install_packages {
         # Download dependencies of package
         if [[ -s /uny/pkg/"$pkg"/"$pkgver"/rdep ]]; then
             echo "Installing dependencies for $pkg/$pkgver"
-            while read -r dep; do
+            deps="$(sed "s|unypkg/||g" /uny/pkg/"$pkg"/"$pkgver"/rdep)"
+            for dep in $deps; do
                 if [[ -d /uny/pkg/"$dep" ]]; then
                     echo "$dep is already installed."
                 else
