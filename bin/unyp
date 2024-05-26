@@ -14,6 +14,7 @@ function update_unypkg {
 function install_packages {
     packages=("$@")
     for pkgopt in "${packages[@]}"; do
+        # Check for version specific instructions or just package name
         if [[ $pkgopt == *'/'* ]]; then
             pkg="$(echo "$pkgopt" | sed "s|/.*$||")"
             pkgver="$(echo "$pkgopt" | sed "s|^.*/||")"
@@ -25,15 +26,31 @@ function install_packages {
         #release_url="$(wget -q --server-response https://github.com/unypkg/"$pkg"/releases/"$pkg_release" -O- 2>&1 | grep "Location" | sed "s|  Location: ||")"
         #download_url="${release_url//\/tag\//\/download\/}/unypkg-$pkg.tar.xz"
 
+        # Download package from GitHub
         if [[ $(wget -q --server-response https://github.com/unypkg/"$pkg" 2>&1 | grep HTTP | sed -e "s|[[:space:]]*HTTP/[0-9.]*[[:space:]]||" -e "s|[[:space:]]OK||") != 200 ]]; then
             echo "unypkg repo https://github.com/unypkg/$pkg does not seem to exist. Aborting." && exit
         fi
-
         pkg_release="$(git ls-remote --refs --tags --sort="v:refname" https://github.com/unypkg/"$pkg" refs/tags/"$pkgver"* | tail -n1 | sed "s|.*refs/tags/||")"
         [[ -z $pkg_release ]] && echo "There is no release for the package $pkg with that version. Aborting." && exit
+        pkgver="$(echo "$pkg_release" | sed "s|-.*$||")"
         download_url="https://github.com/unypkg/$pkg/releases/download/$pkg_release"
         echo "Downloading and installing: $pkg $pkg_release"
         wget -q "$download_url/unypkg-$pkg.tar.xz" -O- | tar xJ -C /uny/pkg
+
+        # Download dependencies of package
+        if [[ -s /uny/pkg/"$pkg"/"$pkgver"/rdep ]]; then
+            echo "Installing dependencies for $pkg/$pkgver"
+            while read -r dep; do
+                if [[ -d /uny/pkg/"$dep" ]]; then
+                    echo "$dep is already installed."
+                else
+                    unyp install "$dep"
+                    find /uny/pkg/"$dep" -mindepth 1 ! -name lib -exec rm -rf {} +
+                fi
+            done </uny/pkg/"$pkg"/"$pkgver"/rdep
+        else
+            echo "No run dependencies file rdep found for package $pkg. Not downloading any dependencies."
+        fi
 
         # Add to paths files
         for usrpath in /uny/pkg/"$pkg"/*/!(vdet|rdep); do
