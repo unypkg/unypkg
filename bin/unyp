@@ -27,7 +27,7 @@ function install_packages {
         #download_url="${release_url//\/tag\//\/download\/}/unypkg-$pkg.tar.xz"
 
         # Download package from GitHub
-        if [[ $(wget -q --server-response https://github.com/unypkg/"$pkg" 2>&1 | grep HTTP | sed -e "s|[[:space:]]*HTTP/[0-9.]*[[:space:]]||" -e "s|[[:space:]]OK||") != 200 ]]; then
+        if [[ $(wget --spider https://github.com/unypkg/"$pkg" 2>&1 | grep -o "HTTP.*" | sed -e "s|^.*\.\.\.[[:space:]]||" -e "s|[^0-9].*||") != 200 ]]; then
             echo "unypkg repo https://github.com/unypkg/$pkg does not seem to exist. Aborting." && exit
         fi
         pkg_release="$(git ls-remote --refs --tags --sort="v:refname" https://github.com/unypkg/"$pkg" refs/tags/"$pkgver"* | tail -n1 | sed "s|.*refs/tags/||")"
