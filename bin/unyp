@@ -46,7 +46,7 @@ function install_packages {
                     echo "$dep is already installed."
                 else
                     unyp install "$dep"
-                    find /uny/pkg/"$dep" -mindepth 1 ! -name lib -exec rm -rf {} +
+                    find /uny/pkg/"$dep" -mindepth 1 ! -name lib -type d -exec rm -rf {} +
                 fi
             done </uny/pkg/"$pkg"/"$pkgver"/rdep
         else
