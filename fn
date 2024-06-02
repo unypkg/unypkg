@@ -185,16 +185,13 @@ function version_verbose_log_clean_unpack_cd {
 
 function get_env_var_values {
     libpath="$(cat /uny/paths/lib):/uny/pkg/$pkgname/$pkgver/lib"
-    LIBRARY_PATH="$libpath" # Used during linking
-    export LIBRARY_PATH
     ldflags="-Wl,-rpath=$libpath -Wl,--dynamic-linker=$(grep -o "^.*glibc/[^:]*" /uny/paths/lib)/ld-linux-x86-64.so.2" # Used at runtime
-    export LDFLAGS="$ldflags"
-    LD_RUN_PATH=$libpath # Used at runtime
-    export LD_RUN_PATH
-    CFLAGS="-O2"
-    export CFLAGS
-    CXXFLAGS="${CFLAGS}"
-    export CXXFLAGS
+    export LDFLAGS="$ldflags"                                                                                          # Used during linking
+    export LIBRARY_PATH="$libpath"                                                                                     # Used during linking
+    export LD_LIBRARY_PATH="$libpath"                                                                                  # Used during linking
+    export LD_RUN_PATH="$libpath"                                                                                      # Used at runtime
+    export CFLAGS="-O2"
+    export CXXFLAGS="${CFLAGS}"
     CMAKE_PREFIX_PATH="$(for i in /uny/pkg/*/*; do echo -n "$i:"; done)"
     export CMAKE_PREFIX_PATH
 }
