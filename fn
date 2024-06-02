@@ -8,8 +8,10 @@ function get_pkgconfig_paths {
     for pc in /uny/pkg/*/*/*/pkgconfig; do
         if [ -z "$PKG_CONFIG_PATH" ]; then
             export PKG_CONFIG_PATH="$pc"
+            export PKG_CONFIG_LIBDIR="$pc"
         else
             export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$pc"
+            export PKG_CONFIG_LIBDIR="$PKG_CONFIG_LIBDIR:$pc"
         fi
     done
 }
