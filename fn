@@ -165,7 +165,7 @@ function remove_from_paths_files {
 function version_verbose_log_clean_unpack_cd {
     SECONDS=0
     shopt -s nocaseglob
-    pkgver="$(echo /sources/$pkgname*.tar* | sed "s/$pkgname//" | sed -nre 's/^[^0-9]*(([0-9]+\.)*[0-9]+).*/\1/p')"
+    pkgver="$(echo /sources/$pkgname*.tar* | sed -e "s|^.*$pkgname-||" -e "s|.tar\..*||")"
     [[ ! -d /uny/build/logs ]] && mkdir /uny/build/logs
     LOG_FILE=/uny/build/logs/"$pkgname-$pkgver"-unypkg-build-$(date -u +"%Y-%m-%dT%H.%M.%SZ").log
     exec 3>&1 4>&2
