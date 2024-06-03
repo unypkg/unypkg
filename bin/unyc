@@ -22,9 +22,6 @@ else
     mount -t tmpfs -o nosuid,nodev tmpfs /uny/dev/shm
 fi
 
-source /uny/git/unypkg/fn
-get_pkgconfig_paths
-
 UNY_PATH="$(cat /uny/uny/paths/bin):$(cat /uny/uny/paths/sbin):/usr/bin:/usr/sbin"
 
 chroot /uny /usr/bin/env -i \
@@ -32,7 +29,6 @@ chroot /uny /usr/bin/env -i \
     TERM="$TERM" \
     PS1='uny | \u:\w\$ ' \
     PATH="$UNY_PATH" \
-    PKG_CONFIG_PATH="$PKG_CONFIG_PATH" \
     bash --login
 
 cat <<EOF

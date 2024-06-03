@@ -2,19 +2,6 @@
 # shellcheck disable=SC1091,SC2154,SC2086
 
 #############################################################################################################################
-### Get pkg-config search paths
-### Used in unyc
-function get_pkgconfig_paths {
-    for pc in /uny/pkg/*/*/*/pkgconfig; do
-        if [ -z "$PKG_CONFIG_PATH" ]; then
-            export PKG_CONFIG_PATH="$pc"
-        else
-            export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$pc"
-        fi
-    done
-}
-
-#############################################################################################################################
 ### General unypkg functions
 function uny_build_date {
     # new vdet date information
@@ -39,16 +26,6 @@ function uny_auto_github_conf {
 
 #############################################################################################################################
 ### In chroot functions
-function uny_env_paths {
-    if [[ -f /uny/paths/bin ]]; then
-        PATH="$(cat /uny/paths/bin):$(cat /uny/paths/sbin):/usr/bin:/usr/sbin"
-        export PATH
-
-        glib_path=(/uny/pkg/glibc/*)
-        export LOCPATH="${glib_path[0]}/lib/locale"
-        export I18NPATH="${glib_path[0]}/share/i18n"
-    fi
-}
 
 #############################################################################################################################
 ### Stage 1 download functions
@@ -131,7 +108,32 @@ function cleanup {
 }
 
 #############################################################################################################################
-### Stage 2 chroot build functions
+### Stage 2 and Build Scripts chroot build functions
+
+function get_pkgconfig_paths {
+    for pc in {/uny/pkg/*/*/*/pkgconfig,/uny/pkg/*/*/*/*/pkgconfig}; do
+        if [ -z "$PKG_CONFIG_PATH" ]; then
+            export PKG_CONFIG_PATH="$pc"
+            export PKG_CONFIG_LIBDIR="$pc"
+        else
+            export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$pc"
+            export PKG_CONFIG_LIBDIR="$PKG_CONFIG_LIBDIR:$pc"
+        fi
+    done
+}
+
+function uny_env_paths {
+    if [[ -f /uny/paths/bin ]]; then
+        PATH="$(cat /uny/paths/bin):$(cat /uny/paths/sbin):/usr/bin:/usr/sbin"
+        export PATH
+
+        glib_path=(/uny/pkg/glibc/*)
+        export LOCPATH="${glib_path[0]}/lib/locale"
+        export I18NPATH="${glib_path[0]}/share/i18n"
+    fi
+    get_pkgconfig_paths
+}
+
 function add_to_paths_files {
     for usrpath in /uny/pkg/"$pkgname"/"$pkgver"/*; do
         pathtype=$(basename "$usrpath")
@@ -194,6 +196,7 @@ function get_env_var_values {
     export CXXFLAGS="${CFLAGS}"
     CMAKE_PREFIX_PATH="$(for i in /uny/pkg/*/*; do echo -n "$i:"; done)"
     export CMAKE_PREFIX_PATH
+    get_pkgconfig_paths
 }
 
 function get_include_paths_temp {
