@@ -49,6 +49,7 @@ function install_packages {
         # Download dependencies of package
         if [[ $pkgdet =~ ^("nd"|"nodep")$ ]]; then
             echo "Not installing dependencies for $pkg/$pkgver"
+            pkgdet=""
         else
             if [[ -s /uny/pkg/"$pkg"/"$pkgver"/rdep ]]; then
                 echo "Installing dependencies for $pkg/$pkgver"
