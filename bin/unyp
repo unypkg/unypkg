@@ -36,6 +36,9 @@ function install_packages {
         if [[ $(wget --spider https://github.com/unypkg/"$pkg" 2>&1 | grep -o "HTTP.*" | sed -e "s|^.*\.\.\.[[:space:]]||" -e "s|[^0-9].*||") != 200 ]]; then
             echo "unypkg repo https://github.com/unypkg/$pkg does not seem to exist. Aborting." && exit
         fi
+        if [[ $pkgver == "latest" ]]; then
+            pkgver=""
+        fi
         pkg_release="$(git ls-remote --refs --tags --sort="v:refname" https://github.com/unypkg/"$pkg" refs/tags/"$pkgver"* | tail -n1 | sed "s|.*refs/tags/||")"
         [[ -z $pkg_release ]] && echo "There is no release for the package $pkg with that version. Aborting." && exit
         pkgver="$(echo "$pkg_release" | sed "s|-.*$||")"
