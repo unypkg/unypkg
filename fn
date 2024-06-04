@@ -162,6 +162,30 @@ function remove_from_paths_files {
     fi
 }
 
+function disable_packages {
+    packages=("$@")
+    for pkgopt in "${packages[@]}"; do
+        if [[ $pkgopt == *'/'* ]]; then
+            pkg="$(echo "$pkgopt" | cut --field=1 --delimiter="/")"
+            pkgver="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
+            if [[ -d /uny/pkg/$pkg/$pkgver ]]; then
+                pkgname="$pkg"
+                pkgconfig_dir=(/uny/pkg/"$pkg"/"$pkgver"/*/pkgconfig)
+                if [[ -d ${pkgconfig_dir[0]} ]]; then
+                    mv -v ${pkgconfig_dir[0]} ${pkgconfig_dir[0]}_disabled
+                fi
+                remove_from_paths_files
+            else
+                echo "No package $pkg with version $pkgver on this system."
+                exit
+            fi
+        else
+            echo "Please specify packge to be disabled as package/version e.g. openssl/3.3.0"
+            exit
+        fi
+    done
+}
+
 function version_verbose_log_clean_unpack_cd {
     SECONDS=0
     shopt -s nocaseglob
@@ -194,7 +218,7 @@ function get_env_var_values {
     export LD_RUN_PATH="$libpath"                                                                                      # Used at runtime
     export CFLAGS="-O2"
     export CXXFLAGS="${CFLAGS}"
-    CMAKE_PREFIX_PATH="$(for i in /uny/pkg/*/*; do echo -n "$i:"; done)"
+    CMAKE_PREFIX_PATH="${libpath//\/lib/}"
     export CMAKE_PREFIX_PATH
     get_pkgconfig_paths
 }
