@@ -176,6 +176,7 @@ function disable_packages {
                     mv -v ${pkgconfig_dir[0]} ${pkgconfig_dir[0]}_disabled
                 fi
                 remove_from_paths_files
+                echo "Package $pkg/$pkgver disabled."
             else
                 echo "No package $pkg with version $pkgver on this system."
                 exit
