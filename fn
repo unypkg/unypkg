@@ -150,8 +150,9 @@ function add_to_paths_files {
 }
 
 function remove_from_paths_files {
+    shopt -s extglob
     if [[ -d /uny/pkg/$pkgname/$pkgver ]]; then
-        for usrpath in /uny/pkg/"$pkgname"/"$pkgver"/*; do
+        for usrpath in /uny/pkg/"$pkgname"/"$pkgver"/!(vdet|rdep); do
             pathtype=$(basename "$usrpath")
             if grep -q "/$pkgname/[^/:]*" /uny/paths/"$pathtype"; then
                 sed -z -e "s|:.[^:]*$pkgname/[^:]*||" -e "s/\n//g" -i /uny/paths/"$pathtype"
