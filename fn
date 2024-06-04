@@ -182,7 +182,7 @@ function version_verbose_log_clean_unpack_cd {
     rm -rf /sources/"$pkgname"*"$pkgver"
     cd /sources || exit
     tar xf "$pkgname"*.tar.*
-    cd "$(echo $pkgname* | grep -Eio "$pkgname.[^0-9]*(([0-9]+\.)*[0-9]+)" | sort -u)" || exit
+    cd "$pkgname"-"$pkgver" || exit
 }
 
 function get_env_var_values {
