@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1091,SC2154,SC2086
 
+shopt -s extglob
+
 #############################################################################################################################
 ### General unypkg functions
 function uny_build_date {
@@ -150,7 +152,6 @@ function add_to_paths_files {
 }
 
 function remove_from_paths_files {
-    shopt -s extglob
     if [[ -d /uny/pkg/$pkgname/$pkgver ]]; then
         for usrpath in /uny/pkg/"$pkgname"/"$pkgver"/!(vdet|rdep); do
             pathtype=$(basename "$usrpath")
