@@ -287,6 +287,10 @@ function package_unypkg {
         vdet_new_file="${pkg//release-/vdet-}"
         vdet_content="$(cat "$vdet_new_file")"
 
+        if [[ "${#vdet_content}" -gt 200 ]]; then
+            vdet_content="$(for i in {1..5}; do sed -n ${i}p <<<$vdet_content; done) ..."
+        fi
+
         pkg="$(echo "$pkg" | grep -Eo "release.*" | sed -e "s|release-||")"
         pkgv="$(echo "$vdet_content" | head -n 1)"
 
