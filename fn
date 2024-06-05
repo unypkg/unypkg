@@ -287,10 +287,6 @@ function package_unypkg {
         vdet_new_file="${pkg//release-/vdet-}"
         vdet_content="$(cat "$vdet_new_file")"
 
-        if [[ "${#vdet_content}" -gt 200 ]]; then
-            vdet_content="$(for i in {1..5}; do sed -n ${i}p <<<$vdet_content; done) ..."
-        fi
-
         pkg="$(echo "$pkg" | grep -Eo "release.*" | sed -e "s|release-||")"
         pkgv="$(echo "$vdet_content" | head -n 1)"
 
@@ -303,6 +299,9 @@ function package_unypkg {
         XZ_OPT="-9 --threads=0" tar -cJpf unypkg-"$pkg".tar.xz "$pkg"
         if [[ -s "$pkg"/"$pkgv"/rdep ]]; then
             rdep_content="$(sed "s|unypkg/||" "$pkg"/"$pkgv"/rdep)"
+            if [[ "${#rdep_content}" -gt 200 ]]; then
+                rdep_content="$(for i in {1..5}; do sed -n ${i}p <<<$rdep_content; done) ..."
+            fi
             gh -R unypkg/"$pkg" release create "$pkgv"-"$uny_build_date_now" --generate-notes \
                 "$pkg/$pkgv/vdet#vdet - $vdet_content" "$pkg/$pkgv/rdep#rdep - $rdep_content" unypkg-"$pkg".tar.xz "$pkg"-build.log "$source_archive_new"
         else
