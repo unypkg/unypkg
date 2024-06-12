@@ -87,6 +87,7 @@ function archiving_source {
     [[ -d "$pkgname-$latest_ver" ]] && rm -rf "$pkgname-$latest_ver"
     mv -v "$pkg_git_repo_dir" "$pkgname-$latest_ver"
     XZ_OPT="--threads=0" tar -cJpf "$pkgname-$latest_ver".tar.xz "$pkgname-$latest_ver"
+    pkg_git_repo_dir=""
 }
 
 function repo_clone_version_archive {
