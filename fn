@@ -54,7 +54,7 @@ function git_clone_source_repo {
     pkg_git_repo_dir="$(basename "$pkg_git_repo" | cut -d. -f1)"
     [[ -d "$pkg_git_repo_dir" ]] && rm -rf "$pkg_git_repo_dir"
     # shellcheck disable=SC2086
-    git clone $gitdepth --single-branch -b "$pkg_head" "$pkg_git_repo"
+    git clone $gitdepth --recurse-submodules -j8 --single-branch -b "$pkg_head" "$pkg_git_repo"
 }
 
 function check_if_newer_version {
