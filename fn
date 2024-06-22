@@ -126,6 +126,7 @@ function get_pkgconfig_paths {
 }
 
 function uny_env_paths {
+    set +vx
     if [[ -f /uny/paths/bin ]]; then
         PATH="$(cat /uny/paths/bin):$(cat /uny/paths/sbin):/usr/bin:/usr/sbin"
         export PATH
@@ -135,6 +136,11 @@ function uny_env_paths {
         export I18NPATH="${glib_path[0]}/share/i18n"
     fi
     get_pkgconfig_paths
+    echo "PATH is:"
+    echo "$PATH"
+    echo "PKG_CONFIG_PATH and PKG_CONFIG_LIBDIR are:"
+    echo "$PKG_CONFIG_PATH"
+    set -vx
 }
 
 function add_to_paths_files {
