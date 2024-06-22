@@ -247,10 +247,16 @@ function get_include_paths_temp {
 }
 
 function get_include_paths {
+    set +vx
     C_INCLUDE_PATH="$(cat /uny/paths/include)"
     export C_INCLUDE_PATH
     CPLUS_INCLUDE_PATH="$(cat /uny/paths/include-cplus):$(cat /uny/paths/include)"
     export CPLUS_INCLUDE_PATH
+    echo "C_INCLUDE_PATH is:"
+    echo "$C_INCLUDE_PATH"
+    echo "CPLUS_INCLUDE_PATH is:"
+    echo "$CPLUS_INCLUDE_PATH"
+    set -vx
 }
 
 function dependencies_file_and_unset_vars {
