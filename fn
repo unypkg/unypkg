@@ -214,6 +214,7 @@ function version_verbose_log_clean_unpack_cd {
 }
 
 function get_env_var_values {
+    set +vx
     libpath="$(cat /uny/paths/lib):/uny/pkg/$pkgname/$pkgver/lib"
     ldflags="-Wl,-rpath=$libpath -Wl,--dynamic-linker=$(grep -o "^.*glibc/[^:]*" /uny/paths/lib)/ld-linux-x86-64.so.2" # Used at runtime
     export LDFLAGS="$ldflags"                                                                                          # Used during linking
@@ -225,13 +226,24 @@ function get_env_var_values {
     CMAKE_PREFIX_PATH="${libpath//\/lib/}"
     export CMAKE_PREFIX_PATH
     get_pkgconfig_paths
+    echo "CMAKE_PREFIX_PATH and basis for LIBRARY_PATH is:"
+    echo "$CMAKE_PREFIX_PATH"
+    echo "PKG_CONFIG_PATH and PKG_CONFIG_LIBDIR are:"
+    echo "$PKG_CONFIG_PATH"
+    set -vx
 }
 
 function get_include_paths_temp {
+    set +vx
     C_INCLUDE_PATH="$(cat /uny/paths/include-c-base):$(cat /uny/paths/include)"
     export C_INCLUDE_PATH
     CPLUS_INCLUDE_PATH="$(cat /uny/paths/include-cplus-base):$(cat /uny/paths/include)"
     export CPLUS_INCLUDE_PATH
+    echo "C_INCLUDE_PATH is:"
+    echo "$C_INCLUDE_PATH"
+    echo "CPLUS_INCLUDE_PATH is:"
+    echo "$CPLUS_INCLUDE_PATH"
+    set -vx
 }
 
 function get_include_paths {
