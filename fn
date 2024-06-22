@@ -2,6 +2,7 @@
 # shellcheck disable=SC1091,SC2154,SC2086
 
 shopt -s extglob
+set +vx
 
 #############################################################################################################################
 ### General unypkg functions
@@ -335,3 +336,5 @@ function package_unypkg {
         fi
     done
 }
+
+set -vx
