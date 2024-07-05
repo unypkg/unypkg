@@ -2,6 +2,14 @@
 # shellcheck disable=SC1091,SC2154,SC2086
 
 shopt -s extglob
+saved_shell_opts="$-"
+if [[ $saved_shell_opts == *"x"* ]]; then
+    x=yes
+fi
+if [[ $saved_shell_opts == *"v"* ]]; then
+    v=yes
+fi
+set +vx
 
 #############################################################################################################################
 ### General unypkg functions
@@ -335,3 +343,13 @@ function package_unypkg {
         fi
     done
 }
+
+if [[ $x == "yes" ]]; then
+    set -x
+    x=""
+fi
+if [[ $v == "yes" ]]; then
+    set -v
+    v=""
+fi
+saved_shell_opts=""
