@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC1091,SC2001
+# shellcheck disable=SC1090,SC1091,SC2001
 
 shopt -s extglob
 source /uny/git/unypkg/help
@@ -52,10 +52,7 @@ function install_packages {
             unset pkgver pkgdet1 pkgdet2 pkgdet3
         fi
 
-        #release_url="$(wget -q --server-response https://github.com/unypkg/"$pkg"/releases/"$pkg_release" -O- 2>&1 | grep "Location" | sed "s|  Location: ||")"
-        #download_url="${release_url//\/tag\//\/download\/}/unypkg-$pkg.tar.xz"
-
-        # Download package from GitHub
+        # Pre download checks
         if [[ $(wget --spider https://github.com/unypkg/"$pkg" 2>&1 | grep -o "HTTP.*" | sed -e "s|^.*\.\.\.[[:space:]]||" -e "s|[^0-9].*||") != 200 ]]; then
             echo "unypkg repo https://github.com/unypkg/$pkg does not seem to exist. Aborting." && exit
         fi
@@ -64,12 +61,18 @@ function install_packages {
         fi
         pkg_release="$(git ls-remote --refs --tags --sort="v:refname" https://github.com/unypkg/"$pkg" refs/tags/"$pkgver"* | tail -n1 | sed "s|.*refs/tags/||")"
         [[ -z $pkg_release ]] && echo "There is no release for the package $pkg with that version. Aborting." && exit
+
         pkgver="$(echo "$pkg_release" | sed "s|-.*$||")"
         download_url="https://github.com/unypkg/$pkg/releases/download/$pkg_release"
+
+        # Run preinstallation script
+
+        # Download and install
         echo "Downloading and installing: $pkg $pkg_release"
         [[ -n $pkgdet1 ]] && pkgsdir="/$pkgdet1"
         [[ -n $pkgdet2 ]] && pkgssnode="/$pkgdet2*"
-        wget -q "$download_url/unypkg-$pkg.tar.xz" -O- | tar xJ -C /uny/pkg --wildcards "$pkg"/"$pkgver""$pkgsdir""$pkgssnode"
+        wget -q "$download_url/unypkg-$pkg.tar.xz" -O- |
+            tar xJ -C /uny/pkg --wildcards "$pkg"/"$pkgver""$pkgsdir""$pkgssnode" "$pkg"/"$pkgver"/uny
 
         # Download dependencies of package
         if [[ $pkgdet1 =~ ^("nd"|"nodep")$ || $pkgdet2 =~ ^("nd"|"nodep")$ || $pkgdet3 =~ ^("nd"|"nodep")$ ]]; then
@@ -89,6 +92,11 @@ function install_packages {
             else
                 echo "No run dependencies file rdep found for package $pkg. Not downloading any dependencies."
             fi
+        fi
+
+        # Run installation script
+        if [[ -s /uny/pkg/"$pkg"/"$pkgver"/uny/install_script ]]; then
+            source /uny/pkg/"$pkg"/"$pkgver"/uny/install_script
         fi
 
         # Add to paths files
