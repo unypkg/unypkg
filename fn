@@ -325,6 +325,7 @@ function package_unypkg {
 
         mkdir "$pkg"/"$pkgv"/.uny
         cp "$vdet_new_file" "$pkg"/"$pkgv"/.uny/vdet
+        rm -f /home/runner/work/"$pkg"/"$pkg"/UNY_AUTO_PAT /home/runner/work/"$pkg"/"$pkg"/GH_TOKEN
         cp /home/runner/work/"$pkg"/"$pkg"/* "$pkg"/"$pkgv"/.uny/
 
         source_archive_orig="$(echo /uny/sources/"$pkg"-"$pkgv".tar.*)"
