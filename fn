@@ -323,7 +323,9 @@ function package_unypkg {
         pkg="$(echo "$pkg" | grep -Eo "release.*" | sed -e "s|release-||")"
         pkgv="$(echo "$vdet_content" | head -n 1)"
 
-        cp "$vdet_new_file" "$pkg"/"$pkgv"/vdet
+        mkdir "$pkg"/"$pkgv"/.uny
+        cp "$vdet_new_file" "$pkg"/"$pkgv"/.uny/vdet
+        cp /home/runner/work/"$pkg"/"$pkg"/* "$pkg"/"$pkgv"/.uny/
 
         source_archive_orig="$(echo /uny/sources/"$pkg"-"$pkgv".tar.*)"
         source_archive_new="$(echo "$source_archive_orig" | sed -r -e "s|^.*/||" -e "s|(\.tar.*$)|-source\1|")"
@@ -331,15 +333,16 @@ function package_unypkg {
         cp -a /uny/uny/build/logs/"$pkg"-*.log "$pkg"-build.log
         XZ_OPT="-9 --threads=0" tar -cJpf unypkg-"$pkg".tar.xz "$pkg"
         if [[ -s "$pkg"/"$pkgv"/rdep ]]; then
-            rdep_content="$(sed "s|unypkg/||" "$pkg"/"$pkgv"/rdep)"
+            mv "$pkg"/"$pkgv"/rdep "$pkg"/"$pkgv"/.uny/rdep
+            rdep_content="$(sed "s|unypkg/||" "$pkg"/"$pkgv"/.uny/rdep)"
             if [[ "${#rdep_content}" -gt 200 ]]; then
                 rdep_content="$(for i in {1..5}; do sed -n ${i}p <<<$rdep_content; done) ..."
             fi
             gh -R unypkg/"$pkg" release create "$pkgv"-"$uny_build_date_now" --generate-notes \
-                "$pkg/$pkgv/vdet#vdet - $vdet_content" "$pkg/$pkgv/rdep#rdep - $rdep_content" unypkg-"$pkg".tar.xz "$pkg"-build.log "$source_archive_new"
+                "$pkg/$pkgv/.uny/vdet#vdet - $vdet_content" "$pkg/$pkgv/.uny/rdep#rdep - $rdep_content" unypkg-"$pkg".tar.xz "$pkg"-build.log "$source_archive_new"
         else
             gh -R unypkg/"$pkg" release create "$pkgv"-"$uny_build_date_now" --generate-notes \
-                "$pkg/$pkgv/vdet#vdet - $vdet_content" unypkg-"$pkg".tar.xz "$pkg"-build.log "$source_archive_new"
+                "$pkg/$pkgv/.uny/vdet#vdet - $vdet_content" unypkg-"$pkg".tar.xz "$pkg"-build.log "$source_archive_new"
         fi
     done
 }
