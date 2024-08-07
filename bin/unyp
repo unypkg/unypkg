@@ -66,7 +66,7 @@ function install_packages {
         download_url="https://github.com/unypkg/$pkg/releases/download/$pkg_release"
 
         # Run preinstallation script
-        pre_install_url="https://raw.githubusercontent.com/unypkg/$pkg/$pkg_release/.uny/0_pre_install_script.sh"
+        pre_install_url="https://raw.githubusercontent.com/unypkg/$pkg/$pkg_release/0_pre_install_script.sh"
         if wget -S --spider "$pre_install_url" 2>&1 | grep -q '200 OK'; then
             wget -q "$pre_install_url" -O- | bash
         fi
@@ -76,23 +76,31 @@ function install_packages {
         [[ -n $pkgdet1 ]] && pkgsdir="/$pkgdet1"
         [[ -n $pkgdet2 ]] && pkgssnode="/$pkgdet2*"
         wget -q "$download_url/unypkg-$pkg.tar.xz" -O- |
-            tar xJ -C /uny/pkg --wildcards "$pkg"/"$pkgver""$pkgsdir""$pkgssnode" "$pkg"/"$pkgver"/uny
+            tar xJ -C /uny/pkg --wildcards "$pkg"/"$pkgver""$pkgsdir""$pkgssnode" "$pkg"/"$pkgver"/.uny 2>/dev/null
 
         # Download dependencies of package
+
+        function install_dependencies {
+            echo "Installing dependencies for $pkg/$pkgver"
+            deps="$(sed "s|unypkg/||g" "$rdep_file")"
+            for dep in $deps; do
+                if [[ -d /uny/pkg/"$dep" ]]; then
+                    echo "$dep is already installed."
+                else
+                    unyp install "$dep"/lib
+                fi
+            done
+        }
+
         if [[ $pkgdet1 =~ ^("nd"|"nodep")$ || $pkgdet2 =~ ^("nd"|"nodep")$ || $pkgdet3 =~ ^("nd"|"nodep")$ ]]; then
             echo "Not installing dependencies for $pkg/$pkgver"
         else
             if [[ -s /uny/pkg/"$pkg"/"$pkgver"/rdep ]]; then
-                echo "Installing dependencies for $pkg/$pkgver"
-                deps="$(sed "s|unypkg/||g" /uny/pkg/"$pkg"/"$pkgver"/rdep)"
-                for dep in $deps; do
-                    if [[ -d /uny/pkg/"$dep" ]]; then
-                        echo "$dep is already installed."
-                    else
-                        unyp install "$dep"/lib
-                        #find /uny/pkg/"$dep" -mindepth 1 ! -name lib -type d -exec rm -rf {} +
-                    fi
-                done </uny/pkg/"$pkg"/"$pkgver"/rdep
+                rdep_file=/uny/pkg/"$pkg"/"$pkgver"/rdep
+                install_dependencies
+            elif [[ -s /uny/pkg/"$pkg"/"$pkgver"/.uny/rdep ]]; then
+                rdep_file=/uny/pkg/"$pkg"/"$pkgver"/.uny/rdep
+                install_dependencies
             else
                 echo "No run dependencies file rdep found for package $pkg. Not downloading any dependencies."
             fi
