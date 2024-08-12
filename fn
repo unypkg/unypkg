@@ -313,6 +313,12 @@ function binary_stripping {
     done
 }
 
+function github_release {
+    XZ_OPT="-9 --threads=0" tar -cJpf unypkg-"$pkg".tar.xz "$pkg"
+    gh -R unypkg/"$pkg" release create "$pkgv"-"$uny_build_date_now" --generate-notes \
+        "$pkg/$pkgv/.uny/vdet#vdet - $vdet_content" "$gh_rdep_file"unypkg-"$pkg".tar.xz "$pkg"-build.log "$source_archive_new"
+}
+
 function package_unypkg {
     binary_stripping
     cd /uny/pkg || exit
@@ -332,18 +338,18 @@ function package_unypkg {
         source_archive_new="$(echo "$source_archive_orig" | sed -r -e "s|^.*/||" -e "s|(\.tar.*$)|-source\1|")"
         cp -a "$source_archive_orig" "$source_archive_new"
         cp -a /uny/uny/build/logs/"$pkg"-*.log "$pkg"-build.log
-        XZ_OPT="-9 --threads=0" tar -cJpf unypkg-"$pkg".tar.xz "$pkg"
+
         if [[ -s "$pkg"/"$pkgv"/rdep ]]; then
             mv "$pkg"/"$pkgv"/rdep "$pkg"/"$pkgv"/.uny/rdep
             rdep_content="$(sed "s|unypkg/||" "$pkg"/"$pkgv"/.uny/rdep)"
             if [[ "${#rdep_content}" -gt 200 ]]; then
                 rdep_content="$(for i in {1..5}; do sed -n ${i}p <<<$rdep_content; done) ..."
             fi
-            gh -R unypkg/"$pkg" release create "$pkgv"-"$uny_build_date_now" --generate-notes \
-                "$pkg/$pkgv/.uny/vdet#vdet - $vdet_content" "$pkg/$pkgv/.uny/rdep#rdep - $rdep_content" unypkg-"$pkg".tar.xz "$pkg"-build.log "$source_archive_new"
+            gh_rdep_file="$pkg/$pkgv/.uny/rdep#rdep - $rdep_content "
+            github_release
         else
-            gh -R unypkg/"$pkg" release create "$pkgv"-"$uny_build_date_now" --generate-notes \
-                "$pkg/$pkgv/.uny/vdet#vdet - $vdet_content" unypkg-"$pkg".tar.xz "$pkg"-build.log "$source_archive_new"
+            gh_rdep_file=""
+            github_release
         fi
     done
 }
