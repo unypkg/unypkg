@@ -81,11 +81,11 @@ function install_packages {
         # Download dependencies of package
 
         function install_dependencies {
-            echo "Installing dependencies for $pkg/$pkgver"
+            echo "    Installing dependencies for $pkg/$pkgver"
             deps="$(sed "s|unypkg/||g" "$rdep_file")"
             for dep in $deps; do
                 if [[ -d /uny/pkg/"$dep" ]]; then
-                    echo "$dep is already installed."
+                    echo "      $dep is already installed."
                 else
                     unyp install "$dep"/lib
                 fi
@@ -93,7 +93,7 @@ function install_packages {
         }
 
         if [[ $pkgdet1 =~ ^("nd"|"nodep")$ || $pkgdet2 =~ ^("nd"|"nodep")$ || $pkgdet3 =~ ^("nd"|"nodep")$ ]]; then
-            echo "Not installing dependencies for $pkg/$pkgver"
+            echo "    Not installing dependencies for $pkg/$pkgver"
         else
             if [[ -s /uny/pkg/"$pkg"/"$pkgver"/rdep ]]; then
                 rdep_file=/uny/pkg/"$pkg"/"$pkgver"/rdep
@@ -102,7 +102,7 @@ function install_packages {
                 rdep_file=/uny/pkg/"$pkg"/"$pkgver"/.uny/rdep
                 install_dependencies
             else
-                echo "No run dependencies file rdep found for package $pkg. Not downloading any dependencies."
+                echo "    No run dependencies file rdep found for package $pkg. Not downloading any dependencies."
             fi
         fi
 
