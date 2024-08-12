@@ -316,7 +316,7 @@ function binary_stripping {
 function github_release {
     XZ_OPT="-9 --threads=0" tar -cJpf unypkg-"$pkg".tar.xz "$pkg"
     gh -R unypkg/"$pkg" release create "$pkgv"-"$uny_build_date_now" --generate-notes \
-        "$pkg/$pkgv/.uny/vdet#vdet - $vdet_content" "$gh_rdep_file""unypkg-$pkg.tar.xz" "$pkg"-build.log "$source_archive_new"
+        "$pkg/$pkgv/.uny/vdet#vdet - $vdet_content" "$gh_rdep_file" unypkg-"$pkg".tar.xz "$pkg"-build.log "$source_archive_new"
 }
 
 function package_unypkg {
@@ -345,7 +345,7 @@ function package_unypkg {
             if [[ "${#rdep_content}" -gt 200 ]]; then
                 rdep_content="$(for i in {1..5}; do sed -n ${i}p <<<$rdep_content; done) ..."
             fi
-            gh_rdep_file="$pkg/$pkgv/.uny/rdep#rdep - $rdep_content "
+            gh_rdep_file="$pkg/$pkgv/.uny/rdep#rdep - $rdep_content"
             github_release
         else
             gh_rdep_file=""
