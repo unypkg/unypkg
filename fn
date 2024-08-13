@@ -220,8 +220,10 @@ function version_verbose_log_clean_unpack_cd {
     pkgver="$pkgver"
 
     remove_from_paths_files
-    rm -rf /uny/pkg/"$pkgname"/"$pkgver"
-    rm -rf /sources/"$pkgname"*"$pkgver"
+    if [[ ! $dont_clean == yes ]]; then
+        rm -rf /uny/pkg/"$pkgname"/"$pkgver"
+        rm -rf /sources/"$pkgname"*"$pkgver"
+    fi
     cd /sources || exit
     tar xf "$pkgname"*.tar.*
     cd "$pkgname"-"$pkgver" || exit
