@@ -350,7 +350,8 @@ function package_unypkg {
             gh_rdep_file="$pkg/$pkgv/.uny/rdep#rdep - $rdep_content"
             github_release
         else
-            gh_rdep_file=""
+            echo "nd" >"$pkg"/"$pkgv"/.uny/nordep
+            gh_rdep_file="$pkg/$pkgv/.uny/nordep#nordep - No run dependencies"
             github_release
         fi
     done
