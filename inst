@@ -113,19 +113,18 @@ wheel:x:97:
 users:x:999:
 nogroup:x:65534:
 EOF
-
-    tee /uny/usr/bin/bash <<'EOF'
-#!/usr/bin/env bash 
-exec bash "$@"
-EOF
-    chmod +x /uny/usr/bin/bash
-    ln -sfv bash /uny/usr/bin/sh
 fi
 
 if [[ ! -f /uny/usr/bin/env ]]; then
     mkdir -pv /uny/usr/bin
     ln -sv /usr/bin /uny/bin
     ln -sv /uny/pkg/coreutils/*/bin/env /uny/usr/bin/env
+    tee /uny/usr/bin/bash <<'EOF'
+#!/usr/bin/env bash 
+exec bash "$@"
+EOF
+    chmod +x /uny/usr/bin/bash
+    ln -sfv bash /uny/usr/bin/sh
 fi
 
 # Which script
