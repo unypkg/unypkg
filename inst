@@ -72,11 +72,11 @@ source /uny/git/unypkg/fn
 uny_env_paths
 EOF
 
+mkdir -pv /uny/usr/bin
+ln -sv /usr/bin /uny/bin
+
 # Create shell skeleton if not there
 if [[ ! -f /uny/usr/bin/env && ! "$1" == "buildsys" ]]; then
-    mkdir -pv /uny/usr/bin
-    ln -sv /usr/bin /uny/bin
-
     unyp install coreutils
     ln -sv /uny/pkg/coreutils/*/bin/env /uny/usr/bin/env
 
