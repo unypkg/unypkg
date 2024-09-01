@@ -11,46 +11,50 @@ function update_unypkg {
     chmod +x /uny/git/unypkg/bin/{unyp,unyc}
 }
 
-function install_packages {
-    packages=("$@")
-    for pkgopt in "${packages[@]}"; do
-        # Parse package options
-        if [[ $pkgopt == *'/'* ]]; then
-            if [[ $pkgopt == *'/'*'/'* ]]; then
-                if [[ $pkgopt == *'/'*'/'*'/'* ]]; then
-                    if [[ $pkgopt == *'/'*'/'*'/'*'/'* ]]; then
-                        # Five options given, 4 slashes
-                        pkg="$(echo "$pkgopt" | cut --field=1 --delimiter="/")"
-                        pkgver="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
-                        pkgdet1="$(echo "$pkgopt" | cut --field=3 --delimiter="/")"
-                        pkgdet2="$(echo "$pkgopt" | cut --field=4 --delimiter="/")"
-                        pkgdet3="$(echo "$pkgopt" | cut --field=5 --delimiter="/")"
-                    else
-                        # Four options given, 3 slashes
-                        pkg="$(echo "$pkgopt" | cut --field=1 --delimiter="/")"
-                        pkgver="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
-                        pkgdet1="$(echo "$pkgopt" | cut --field=3 --delimiter="/")"
-                        pkgdet2="$(echo "$pkgopt" | cut --field=4 --delimiter="/")"
-                        unset pkgdet3
-                    fi
-                else
-                    # Three options given, 2 slashes
+function parse_pkg_options {
+    # Parse package options
+    if [[ $pkgopt == *'/'* ]]; then
+        if [[ $pkgopt == *'/'*'/'* ]]; then
+            if [[ $pkgopt == *'/'*'/'*'/'* ]]; then
+                if [[ $pkgopt == *'/'*'/'*'/'*'/'* ]]; then
+                    # Five options given, 4 slashes
                     pkg="$(echo "$pkgopt" | cut --field=1 --delimiter="/")"
                     pkgver="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
                     pkgdet1="$(echo "$pkgopt" | cut --field=3 --delimiter="/")"
-                    unset pkgdet2 pkgdet3
+                    pkgdet2="$(echo "$pkgopt" | cut --field=4 --delimiter="/")"
+                    pkgdet3="$(echo "$pkgopt" | cut --field=5 --delimiter="/")"
+                else
+                    # Four options given, 3 slashes
+                    pkg="$(echo "$pkgopt" | cut --field=1 --delimiter="/")"
+                    pkgver="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
+                    pkgdet1="$(echo "$pkgopt" | cut --field=3 --delimiter="/")"
+                    pkgdet2="$(echo "$pkgopt" | cut --field=4 --delimiter="/")"
+                    unset pkgdet3
                 fi
             else
-                # Two options given, 1 slash
+                # Three options given, 2 slashes
                 pkg="$(echo "$pkgopt" | cut --field=1 --delimiter="/")"
                 pkgver="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
-                unset pkgdet1 pkgdet2 pkgdet3
+                pkgdet1="$(echo "$pkgopt" | cut --field=3 --delimiter="/")"
+                unset pkgdet2 pkgdet3
             fi
         else
-            # One option given, no slashes
-            pkg="$pkgopt"
-            unset pkgver pkgdet1 pkgdet2 pkgdet3
+            # Two options given, 1 slash
+            pkg="$(echo "$pkgopt" | cut --field=1 --delimiter="/")"
+            pkgver="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
+            unset pkgdet1 pkgdet2 pkgdet3
         fi
+    else
+        # One option given, no slashes
+        pkg="$pkgopt"
+        unset pkgver pkgdet1 pkgdet2 pkgdet3
+    fi
+}
+
+function install_packages {
+    packages=("$@")
+    for pkgopt in "${packages[@]}"; do
+        parse_pkg_options
 
         # Pre download checks
         if [[ $(wget --spider https://github.com/unypkg/"$pkg" 2>&1 | grep -o "HTTP.*" | sed -e "s|^.*\.\.\.[[:space:]]||" -e "s|[^0-9].*||") != 200 ]]; then
@@ -126,6 +130,37 @@ function install_packages {
     done
 }
 
+function system_install_packages {
+    packages=("$@")
+    for pkgopt in "${packages[@]}"; do
+        parse_pkg_options
+        if [[ ! -d /uny/pkg/"$pkg" ]]; then
+            unyp install "$pkgopt"
+        fi
+
+        pkg_base=(/uny/pkg/"$pkg"/*)
+        for bin_item in "${pkg_base[0]}"/bin/*,"${pkg_base[0]}"/sbin/*; do
+            basename_bin_item="$(basename "$bin_item")"
+            dirname_bin_item="$(dirname "$bin_item")"
+            base_dirname_bin_item="$(basename "$dirname_bin_item")"
+
+            if [[ ! -L $bin_item ]]; then
+                echo "Linking /$base_dirname_bin_item/uny-$basename_bin_item to $bin_item"
+                ln -sfv "$bin_item" /"$base_dirname_bin_item"/uny-"$basename_bin_item"
+
+                if [[ ! -e /$base_dirname_bin_item/$basename_bin_item ]]; then
+                    echo "  Linking /$base_dirname_bin_item/$basename_bin_item to /$base_dirname_bin_item/uny-$basename_bin_item"
+                    ln -sv uny-"$basename_bin_item" /"$base_dirname_bin_item"/"$basename_bin_item"
+                    echo ""
+                fi
+            else
+                echo "Symlinks"
+                #deal with symlinks here
+            fi
+        done
+    done
+}
+
 function list_packages {
     ls /uny/pkg/*
 }
@@ -133,6 +168,9 @@ function list_packages {
 if [[ $1 =~ (i|inst|install) ]]; then
     shift
     install_packages "$@"
+elif [[ $1 =~ (si|sysi|sysinst|"system-install") ]]; then
+    shift
+    system_install_packages "$@"
 elif [[ $1 =~ (l|ls|list) ]]; then
     list_packages "$@"
 elif [[ $1 =~ (uu|upduny|"update-unypkg") ]]; then
