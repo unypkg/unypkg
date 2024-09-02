@@ -169,15 +169,15 @@ function list_packages {
     ls /uny/pkg/*
 }
 
-if [[ $1 =~ ("^i$"|"^inst$"|"^install$") ]]; then
+if [[ $1 =~ (^i$|^inst$|^install$) ]]; then
     shift
     install_packages "$@"
-elif [[ $1 =~ ("^si$"|"^sysi$"|"^sysinst$"|"^system-install$") ]]; then
+elif [[ $1 =~ (^si$|^sysi$|^sysinst$|^system-install$) ]]; then
     shift
     system_install_packages "$@"
-elif [[ $1 =~ ("^l$"|"^ls$"|"^list$") ]]; then
+elif [[ $1 =~ (^l$|^ls$|^list$) ]]; then
     list_packages "$@"
-elif [[ $1 =~ ("^uu$"|"^upduny$"|"^update-unypkg$") ]]; then
+elif [[ $1 =~ (^uu$|^upduny$|^update-unypkg$) ]]; then
     update_unypkg
 else
     print_help_unyp
