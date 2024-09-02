@@ -156,7 +156,7 @@ function system_install_packages {
                 ln -sfv "$bin_item" /"$base_dirname_bin_item"/uny-"$basename_bin_item"
 
                 if [[ ! -e /$base_dirname_bin_item/$basename_bin_item ]]; then
-                    echo "  Linking /$base_dirname_bin_item/$basename_bin_item to /$base_dirname_bin_item/uny-$basename_bin_item"
+                    echo "Linking /$base_dirname_bin_item/$basename_bin_item to /$base_dirname_bin_item/uny-$basename_bin_item"
                     ln -sv uny-"$basename_bin_item" /"$base_dirname_bin_item"/"$basename_bin_item"
                 fi
                 echo ""
