@@ -139,25 +139,29 @@ function system_install_packages {
         fi
 
         pkg_base=(/uny/pkg/"$pkg"/*)
-        for bin_item in "${pkg_base[0]}"/bin/*,"${pkg_base[0]}"/sbin/*; do
-            basename_bin_item="$(basename "$bin_item")"
-            dirname_bin_item="$(dirname "$bin_item")"
-            base_dirname_bin_item="$(basename "$dirname_bin_item")"
+        shopt -s nullglob
+        declare -a bin_items
+        for bin_item in "${pkg_base[0]}"/bin/* "${pkg_base[0]}"/sbin/*; do
+            bin_items+=("$bin_item")
+        done
+        if [[ -z ${bin_items[0]} ]]; then
+            echo "No executables found in installed package $pkg. Doing nothing."
+        else
+            for bin_item in "${bin_items[@]}"; do
+                basename_bin_item="$(basename "$bin_item")"
+                dirname_bin_item="$(dirname "$bin_item")"
+                base_dirname_bin_item="$(basename "$dirname_bin_item")"
 
-            if [[ ! -L $bin_item ]]; then
                 echo "Linking /$base_dirname_bin_item/uny-$basename_bin_item to $bin_item"
                 ln -sfv "$bin_item" /"$base_dirname_bin_item"/uny-"$basename_bin_item"
 
                 if [[ ! -e /$base_dirname_bin_item/$basename_bin_item ]]; then
                     echo "  Linking /$base_dirname_bin_item/$basename_bin_item to /$base_dirname_bin_item/uny-$basename_bin_item"
                     ln -sv uny-"$basename_bin_item" /"$base_dirname_bin_item"/"$basename_bin_item"
-                    echo ""
                 fi
-            else
-                echo "Symlinks"
-                #deal with symlinks here
-            fi
-        done
+                echo ""
+            done
+        fi
     done
 }
 
