@@ -31,12 +31,13 @@ if [[ -d /uny ]]; then
 fi
 
 # Create directories and symlinks
-mkdir -pv /uny/{git,pkg,uny,etc,tmp,dev,proc,sys,run}
-mkdir -v /uny/uny/{paths,root}
-ln -sv /git /uny/uny/git
-ln -sv /pkg /uny/uny/pkg
-ln -sv /uny/etc /etc/uny
-ln -sv /etc /uny/etc/uny
+mkdir -pv /uny/{git,pkg,etc/uny,tmp,dev,proc,sys,run}
+mkdir -pv /uny/uny/{paths,root}
+mkdir -pv /{etc,opt}/uny
+ln -sfvn /git /uny/uny/git
+ln -sfvn /pkg /uny/uny/pkg
+#ln -sfvn /uny/etc /etc/uny
+#ln -sfvn /etc /uny/etc/uny
 
 # Download base system if specified
 cd /uny || exit
