@@ -91,7 +91,7 @@ function version_details {
 
 function archiving_source {
     [[ -z $pkg_git_repo_dir ]] && pkg_git_repo_dir="$pkgname"
-    rm -rf "$pkg_git_repo_dir"/.git "$pkg_git_repo_dir"/.git*
+    [[ -z $keep_git_dir ]] && rm -rf "$pkg_git_repo_dir"/.git "$pkg_git_repo_dir"/.git*
     [[ -d "$pkgname-$latest_ver" ]] && rm -rf "$pkgname-$latest_ver"
     mv -v "$pkg_git_repo_dir" "$pkgname-$latest_ver"
     XZ_OPT="--threads=0" tar -cJpf "$pkgname-$latest_ver".tar.xz "$pkgname-$latest_ver"
