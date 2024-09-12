@@ -63,7 +63,7 @@ function install_packages {
         if [[ $pkgver == "latest" ]]; then
             pkgver=""
         fi
-        pkg_release="$(git ls-remote --refs --tags --sort="v:refname" https://github.com/unypkg/"$pkg" refs/tags/"$pkgver"* | tail -n1 | sed "s|.*refs/tags/||")"
+        pkg_release="$(git ls-remote --refs --tags --sort="v:refname" https://github.com/unypkg/"$pkg" refs/tags/* | grep "$pkgver" | tail -n1 | sed "s|.*refs/tags/||")"
         [[ -z $pkg_release ]] && echo "There is no release for the package $pkg with that version. Aborting." && exit
 
         pkgver="$(echo "$pkg_release" | sed "s|-.*$||")"
