@@ -48,6 +48,14 @@ if [ ! $xz_installed -eq 0 ]; then
     xz_from_unypkg=yes
 fi
 
+# Check if bash is installed
+bash --version >/dev/null 2>&1
+bash_installed=$?
+if [ ! $bash_installed -eq 0 ]; then
+    echo "bash not found. Installing from unypkg."
+    bash_from_unypkg=yes
+fi
+
 # Create directories and symlinks
 mkdir -pv /uny/git /uny/pkg /uny/etc/uny /uny/tmp /uny/dev /uny/proc /uny/sys /uny/run
 mkdir -pv /uny/uny/paths /uny/uny/root
@@ -107,6 +115,19 @@ fi
 if [ "$xz_from_unypkg" = "yes" ]; then
     unypkg=xz
     wget_package_install
+fi
+
+if [ "$bash_from_unypkg" = "yes" ]; then
+    if [ ! -d /uny/pkg/glibc ]; then
+        unypkg=glibc
+        wget_package_install
+    fi
+    for pkg in ncurses readline bash; do
+        unypkg=$pkg
+        wget_package_install
+    done
+    ln -sfv /uny/pkg/bash/*/bin/bash /bin/uny-bash
+    ln -sv uny-bash /bin/bash
 fi
 
 # Download the unypkg script
