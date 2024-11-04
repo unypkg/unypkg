@@ -1,77 +1,134 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-### Install with wget -qO- uny.nu/pkg | bash -s buildsys
+### Install package manager only with some base packages:
+### wget -qO- uny.nu/pkg | sh -s
+###
+### Install build system with:
+### wget -qO- uny.nu/pkg | bash -s buildsys
 
 # Check to be root
-if [[ $EUID -gt 0 ]]; then
+if [ "$(id -u)" -gt 0 ]; then
     echo "This needs to be run as root user. Not root, exiting..."
     exit
 fi
 
-# Check if git is installed
-git --version >/dev/null 2>&1
-git_installed=$?
-if [[ ! $git_installed -eq 0 ]]; then
-    echo "Git has to be installed. Exiting..."
-    exit
-fi
-
-# Check if wget is installed
-wget --version >/dev/null 2>&1
-wget_installed=$?
-if [[ ! $wget_installed -eq 0 ]]; then
-    echo "wget has to be installed. Exiting..."
-    exit
-fi
-
-# Check if xz is installed
-xz --version >/dev/null 2>&1
-xz_installed=$?
-if [[ ! $xz_installed -eq 0 ]]; then
-    echo "xz has to be installed. Exiting..."
-    exit
-fi
-
 # Check if /uny folder already exists
-if [[ -d /uny ]]; then
+if [ -d /uny ]; then
     echo "/uny folder already exists. Exiting..."
     exit
 fi
 
+# Check if wget, tar and sed are there
+for app in wget tar grep sed; do
+    type $app >/dev/null 2>&1
+    installed=$?
+    if [ ! $installed -eq 0 ]; then
+        echo "$app has to be installed. Exiting..."
+        exit
+    fi
+done
+
+# Save current working directory
+pwd="$(pwd)"
+
+# Check if git is installed
+git --version >/dev/null 2>&1
+git_installed=$?
+if [ ! $git_installed -eq 0 ]; then
+    echo "Git not found. Installing from unypkg."
+    git_from_unypkg=yes
+fi
+git=git
+
+# Check if xz is installed
+xz --version >/dev/null 2>&1
+xz_installed=$?
+if [ ! $xz_installed -eq 0 ]; then
+    echo "xz not found. Installing from unypkg."
+    xz_from_unypkg=yes
+fi
+
 # Create directories and symlinks
-mkdir -pv /uny/{git,pkg,etc/uny,tmp,dev,proc,sys,run}
-mkdir -pv /uny/uny/{paths,root}
-mkdir -pv /{etc,opt}/uny
+mkdir -pv /uny/git /uny/pkg /uny/etc/uny /uny/tmp /uny/dev /uny/proc /uny/sys /uny/run
+mkdir -pv /uny/uny/paths /uny/uny/root
+mkdir -pv /etc/uny /opt/uny
 ln -sfvn /git /uny/uny/git
 ln -sfvn /pkg /uny/uny/pkg
 #ln -sfvn /uny/etc /etc/uny
 #ln -sfvn /etc /uny/etc/uny
 
+wget_package_install() {
+    # shellcheck disable=SC2016
+    target_dir="${target_dir:-/uny/pkg}"
+    pkg_expr="${pkg_expr:-s|\([^/]*$\)|\1/unypkg-$unypkg.tar.xz|}"
+    release_url="$(wget -q --server-response https://github.com/unypkg/"$unypkg"/releases/latest -O- 2>&1 | grep "Location" | sed "s|  Location: ||")"
+    download_url="$(echo "$release_url" | sed -e "s|/tag/|/download/|" -e "$pkg_expr")"
+    cd "$target_dir" || exit
+    echo "Downloading and installing unypkg ${unypkg}. Please wait."
+    wget -q "$download_url" -O- | tar xJ
+    unset target_dir pkg_expr
+}
+
 # Download base system if specified
-cd /uny || exit
-if [[ "$1" == "buildsys" ]]; then
-    base_release_url="$(wget -q --server-response https://github.com/unypkg/base/releases/latest -O- 2>&1 | grep "Location" | sed "s|  Location: ||")"
-    base_download_url="$(echo "$base_release_url" | sed -e "s|/tag/|/download/|" -e "s|\([^/]*$\)|\1/unypkg-base-\1.tar.xz|")"
-    echo "Downloading unypkg base system. Please wait."
-    wget -q "$base_download_url" -O- | tar xJ
+if [ "$1" = "buildsys" ]; then
+    unypkg=base
+    pkg_expr='s|\([^/]*$\)|\1/unypkg-base-\1.tar.xz|'
+    target_dir=/uny
+    wget_package_install
+fi
+
+# Intall git from unypkg
+if [ "$git_from_unypkg" = "yes" ]; then
+    for pkg in glibc zlib zstd curl nghttp2 libidn2 libpsl libunistring openssl expat git; do
+        unypkg=$pkg
+        wget_package_install
+    done
+
+    git="/uny/pkg/git/*/bin/git"
+
+    ca_bundles="
+/etc/ssl/certs/ca-certificates.crt
+/etc/pki/tls/certs/ca-bundle.crt
+/etc/ssl/ca-bundle.pem
+/etc/pki/tls/cacert.pem
+/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+/etc/ssl/cert.pem
+"
+
+    for ca_bundle in $ca_bundles; do
+        if [ -s "$ca_bundle" ]; then
+            $git config --system http.sslcainfo "$ca_bundle"
+            break
+        fi
+    done
+fi
+
+# Intall xz from unypkg
+if [ "$xz_from_unypkg" = "yes" ]; then
+    unypkg=xz
+    wget_package_install
 fi
 
 # Download the unypkg script
-if [[ ! -d /uny/git/unypkg ]]; then
-    git -C /uny/git clone -b release https://github.com/unypkg/unypkg
+cd /uny/git || exit
+if [ ! -d /uny/git/unypkg ]; then
+    $git clone -b release https://github.com/unypkg/unypkg
 else
-    git -C /uny/git/unypkg reset --hard HEAD
-    git -C /uny/git/unypkg pull
+    cd unypkg || exit
+    $git reset --hard HEAD
+    $git pull
+    cd .. || exit
 fi
 
 # Make include-cplus file if it does not exist
-if [[ ! -f /uny/uny/paths/include-cplus ]]; then
+if [ ! -f /uny/uny/paths/include-cplus ]; then
     gcc_ver="$(wget -q --server-response https://github.com/unypkg/gcc/releases/latest -O- 2>&1 | grep "Location" | sed -e "s|  Location: ||" -e "s|^.*/||" -e "s|-.*$||")"
-    echo -n "/uny/pkg/gcc/$gcc_ver/include:/uny/pkg/gcc/$gcc_ver/include/c++/$gcc_ver" >/uny/uny/paths/include-cplus
+    include_cplus="/uny/pkg/gcc/$gcc_ver/include:/uny/pkg/gcc/$gcc_ver/include/c++/$gcc_ver"
+    printf '%s' "$include_cplus" >/uny/uny/paths/include-cplus
 fi
 
 # Make unyp and unyc available to the system
-chmod +x /uny/git/unypkg/bin/{unyp,unyc}
+chmod +x /uny/git/unypkg/bin/unyp /uny/git/unypkg/bin/unyc
 ln -sfv /uny/git/unypkg/bin/unyp /bin/unyp
 ln -sfv /uny/git/unypkg/bin/unyc /bin/unyc
 
@@ -82,9 +139,9 @@ uny_env_paths
 EOF
 
 # Create shell skeleton if not there
-if [[ ! "$1" == "buildsys" ]]; then
-    unyp install coreutils
-    unyp install bash
+if [ ! "$1" = "buildsys" ]; then
+    unyp system-install coreutils
+    unyp system-install bash
 
     cat >/uny/etc/passwd <<"EOF"
 root:x:0:0:root:/uny/root:/bin/bash
@@ -124,7 +181,7 @@ nogroup:x:65534:
 EOF
 fi
 
-if [[ ! -f /uny/usr/bin/env ]]; then
+if [ ! -f /uny/usr/bin/env ]; then
     mkdir -pv /uny/usr/bin
     ln -sv /usr/bin /uny/bin
     ln -sv /uny/pkg/coreutils/*/bin/env /uny/usr/bin/env
@@ -137,7 +194,7 @@ EOF
 fi
 
 # Which script
-if [[ ! -d /uny/pkg/which ]]; then
+if [ ! -d /uny/pkg/which ]; then
     cat >/uny/usr/bin/which <<"EOF"
 #!/usr/bin/env bash
 type -pa "$@" | head -n 1 ; exit ${PIPESTATUS[0]}
@@ -145,3 +202,6 @@ EOF
     chmod -v 755 /uny/usr/bin/which
     chown -v root:root /uny/usr/bin/which
 fi
+
+# Return to original working directory
+cd "$pwd" || exit
