@@ -4,7 +4,7 @@
 ### wget -qO- uny.nu/pkg | sh -s
 ###
 ### Install build system with:
-### wget -qO- uny.nu/pkg | bash -s buildsys
+### wget -qO- uny.nu/pkg | sh -s buildsys
 
 # Check to be root
 if [ "$(id -u)" -gt 0 ]; then
