@@ -24,6 +24,14 @@ if [[ ! $wget_installed -eq 0 ]]; then
     exit
 fi
 
+# Check if xz is installed
+xz --version >/dev/null 2>&1
+xz_installed=$?
+if [[ ! $xz_installed -eq 0 ]]; then
+    echo "xz has to be installed. Exiting..."
+    exit
+fi
+
 # Check if /uny folder already exists
 if [[ -d /uny ]]; then
     echo "/uny folder already exists. Exiting..."
