@@ -55,7 +55,7 @@ function install_packages {
         parse_pkg_options
 
         # Pre download checks
-        if [[ $(wget --spider https://github.com/unypkg/"$pkg" 2>&1 | grep -o "HTTP.*" | sed -e "s|^.*\.\.\.[[:space:]]||" -e "s|[^0-9].*||") != 200 ]]; then
+        if [[ $(wget -S https://github.com/unypkg/"$pkg" 2>&1 | grep -o "HTTP.*" | sed -e "s|HTTP[^ ]* ||" -e "s|[^0-9].*||") != 200 ]]; then
             echo "unypkg repo https://github.com/unypkg/$pkg does not seem to exist. Aborting." && exit
         fi
         if [[ $pkgver == "latest" ]]; then
@@ -66,7 +66,7 @@ function install_packages {
 
         # Run preinstallation script
         pre_install_url="https://raw.githubusercontent.com/unypkg/$pkg/$pkg_release/0_pre_install_script.sh"
-        if wget -S --spider "$pre_install_url" 2>&1 | grep -q '200 OK'; then
+        if wget -S "$pre_install_url" 2>&1 | grep -q '200 OK'; then
             wget -q "$pre_install_url" -O- | bash
         fi
 
