@@ -34,6 +34,5 @@ download_and_install() {
     echo "Downloading and installing: $pkg $pkg_release"
     [ -n "$pkgdet1" ] && pkgsdir="/$pkgdet1"
     [ -n "$pkgdet2" ] && pkgssnode="/$pkgdet2*"
-    wget -q "$download_url/unypkg-$pkg.tar.xz" -O- |
-        tar xJ -C /uny/pkg --wildcards "$pkg"/"$pkgver""$pkgsdir""$pkgssnode" "$pkg"/"$pkgver"/.uny 2>/dev/null
+    wget -q "$download_url/unypkg-$pkg.tar.xz" -O- | tar xJ -C /uny/pkg "$pkg"/"$pkgver""$pkgsdir""$pkgssnode" "$pkg"/"$pkgver"/.uny 2>/dev/null
 }
