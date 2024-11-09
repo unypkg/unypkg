@@ -123,8 +123,8 @@ function cleanup {
 ### Stage 2 and Build Scripts chroot build functions
 
 function get_pkgconfig_paths {
-    [[ ! -z "$PKG_CONFIG_PATH" ]] && unset PKG_CONFIG_PATH
-    [[ ! -z "$PKG_CONFIG_LIBDIR" ]] && unset PKG_CONFIG_LIBDIR
+    [[ -n "$PKG_CONFIG_PATH" ]] && unset PKG_CONFIG_PATH
+    [[ -n "$PKG_CONFIG_LIBDIR" ]] && unset PKG_CONFIG_LIBDIR
     for pc in {/uny/pkg/*/*/*/pkgconfig,/uny/pkg/*/*/*/*/pkgconfig}; do
         if [[ -z "$PKG_CONFIG_PATH" ]]; then
             export PKG_CONFIG_PATH="$pc"

@@ -30,23 +30,7 @@ done
 
 # Save current working directory
 pwd="$(pwd)"
-
-# Check if git is installed
-git --version >/dev/null 2>&1
-git_installed=$?
-if [ ! $git_installed -eq 0 ]; then
-    echo "Git not found. Installing from unypkg."
-    git_from_unypkg=yes
-fi
-git=git
-
-# Check if xz is installed
-xz --version >/dev/null 2>&1
-xz_installed=$?
-if [ ! $xz_installed -eq 0 ]; then
-    echo "xz not found. Installing from unypkg."
-    xz_from_unypkg=yes
-fi
+export pwd
 
 # Check if bash is installed
 bash --version >/dev/null 2>&1
@@ -56,8 +40,17 @@ if [ ! $bash_installed -eq 0 ]; then
     bash_from_unypkg=yes
 fi
 
+# Check if xz is installed
+xz --version >/dev/null 2>&1
+xz_installed=$?
+if [ ! $xz_installed -eq 0 ]; then
+    echo "xz not found. Installing from unypkg."
+    xz_from_unypkg=yes
+fi
+
 # Create directories and symlinks
-mkdir -pv /uny/git /uny/pkg /uny/etc/uny /uny/tmp /uny/dev /uny/proc /uny/sys /uny/run
+echo "Creating directories for unypkg under /uny."
+mkdir -pv /uny/git /uny/pkg/unypkg /uny/etc/uny /uny/tmp /uny/dev /uny/proc /uny/sys /uny/run
 mkdir -pv /uny/uny/paths /uny/uny/root
 mkdir -pv /etc/uny /opt/uny
 ln -sfvn /git /uny/uny/git
@@ -85,44 +78,9 @@ if [ "$1" = "buildsys" ]; then
     wget_package_install
 fi
 
-# Intall git from unypkg
-if [ "$git_from_unypkg" = "yes" ]; then
-    for pkg in glibc zlib zstd curl nghttp2 libidn2 libpsl libunistring openssl expat git; do
-        unypkg=$pkg
-        wget_package_install
-    done
-
-    git="/uny/pkg/git/*/bin/git"
-
-    ca_bundles="
-/etc/ssl/certs/ca-certificates.crt
-/etc/pki/tls/certs/ca-bundle.crt
-/etc/ssl/ca-bundle.pem
-/etc/pki/tls/cacert.pem
-/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
-/etc/ssl/cert.pem
-"
-
-    for ca_bundle in $ca_bundles; do
-        if [ -s "$ca_bundle" ]; then
-            $git config --system http.sslcainfo "$ca_bundle"
-            break
-        fi
-    done
-fi
-
-# Intall xz from unypkg
-if [ "$xz_from_unypkg" = "yes" ]; then
-    unypkg=xz
-    wget_package_install
-fi
-
-if [ "$bash_from_unypkg" = "yes" ]; then
-    if [ ! -d /uny/pkg/glibc ]; then
-        unypkg=glibc
-        wget_package_install
-    fi
-    for pkg in ncurses readline bash; do
+# Install bash from unypkg with wget and tar only
+if [ "$bash_from_unypkg" = "yes" ] && [ ! -d /uny/pkg/bash ]; then
+    for pkg in glibc ncurses readline bash; do
         unypkg=$pkg
         wget_package_install
     done
@@ -130,16 +88,8 @@ if [ "$bash_from_unypkg" = "yes" ]; then
     ln -sv uny-bash /bin/bash
 fi
 
-# Download the unypkg script
-cd /uny/git || exit
-if [ ! -d /uny/git/unypkg ]; then
-    $git clone -b release https://github.com/unypkg/unypkg
-else
-    cd unypkg || exit
-    $git reset --hard HEAD
-    $git pull
-    cd .. || exit
-fi
+export unypkg_install_dir=/uny/pkg/unypkg
+update_unypkg
 
 # Make include-cplus file if it does not exist
 if [ ! -f /uny/uny/paths/include-cplus ]; then
@@ -152,6 +102,11 @@ fi
 chmod +x /uny/git/unypkg/bin/unyp /uny/git/unypkg/bin/unyc
 ln -sfv /uny/git/unypkg/bin/unyp /bin/unyp
 ln -sfv /uny/git/unypkg/bin/unyc /bin/unyc
+
+# Intall xz from unypkg
+if [ "$xz_from_unypkg" = "yes" ]; then
+    unyp system-install xz
+fi
 
 # Set PATH and functions on login in uny chroot
 tee /uny/uny/root/.profile <<'EOF'

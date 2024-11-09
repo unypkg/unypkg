@@ -1,15 +1,13 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC1090,SC1091,SC2001
+# shellcheck disable=1090,1091,2001,2034,2154
+
+unyp_dir="$(dirname "$(readlink "$0")")"
+export unypkg_install_dir="$unyp_dir/.."
 
 shopt -s extglob
-source /uny/git/unypkg/help
-source /uny/git/unypkg/fn
-
-function update_unypkg {
-    git -C /uny/git/unypkg reset --hard HEAD
-    git -C /uny/git/unypkg pull
-    chmod +x /uny/git/unypkg/bin/{unyp,unyc}
-}
+source "$unypkg_install_dir"/help
+source "$unypkg_install_dir"/fn
+source "$unypkg_install_dir"/fn_sh
 
 function parse_pkg_options {
     # Parse package options
@@ -63,11 +61,8 @@ function install_packages {
         if [[ $pkgver == "latest" ]]; then
             pkgver=""
         fi
-        pkg_release="$(git ls-remote --refs --tags --sort="v:refname" https://github.com/unypkg/"$pkg" refs/tags/* | grep "$pkgver" | tail -n1 | sed "s|.*refs/tags/||")"
-        [[ -z $pkg_release ]] && echo "There is no release for the package $pkg with that version. Aborting." && exit
 
-        pkgver="$(echo "$pkg_release" | sed "s|-.*$||")"
-        download_url="https://github.com/unypkg/$pkg/releases/download/$pkg_release"
+        get_pkg_release_version_and_download_url
 
         # Run preinstallation script
         pre_install_url="https://raw.githubusercontent.com/unypkg/$pkg/$pkg_release/0_pre_install_script.sh"
@@ -75,15 +70,9 @@ function install_packages {
             wget -q "$pre_install_url" -O- | bash
         fi
 
-        # Download and install
-        echo "Downloading and installing: $pkg $pkg_release"
-        [[ -n $pkgdet1 ]] && pkgsdir="/$pkgdet1"
-        [[ -n $pkgdet2 ]] && pkgssnode="/$pkgdet2*"
-        wget -q "$download_url/unypkg-$pkg.tar.xz" -O- |
-            tar xJ -C /uny/pkg --wildcards "$pkg"/"$pkgver""$pkgsdir""$pkgssnode" "$pkg"/"$pkgver"/.uny 2>/dev/null
+        download_and_install
 
         # Download dependencies of package
-
         function install_dependencies {
             echo "    Installing dependencies for $pkg/$pkgver"
             deps="$(sed "s|unypkg/||g" "$rdep_file")"
@@ -155,9 +144,13 @@ function system_install_packages {
                 echo "Linking /$base_dirname_bin_item/uny-$basename_bin_item to $bin_item"
                 ln -sfv "$bin_item" /"$base_dirname_bin_item"/uny-"$basename_bin_item"
 
+                if [[ -L /$base_dirname_bin_item/$basename_bin_item ]]; then
+                    echo "Backing up existing Link to $base_dirname_bin_item/${basename_bin_item}_backup"
+                    mv -v /"$base_dirname_bin_item"/"$basename_bin_item" /"$base_dirname_bin_item"/"$basename_bin_item"_backup
+                fi
                 if [[ ! -e /$base_dirname_bin_item/$basename_bin_item ]]; then
                     echo "Linking /$base_dirname_bin_item/$basename_bin_item to /$base_dirname_bin_item/uny-$basename_bin_item"
-                    ln -sv uny-"$basename_bin_item" /"$base_dirname_bin_item"/"$basename_bin_item"
+                    ln -sfv uny-"$basename_bin_item" /"$base_dirname_bin_item"/"$basename_bin_item"
                 fi
                 echo ""
             done

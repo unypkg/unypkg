@@ -1,0 +1,37 @@
+#!/usr/bin/env sh
+# shellcheck disable=2034,2154
+
+update_unypkg() {
+    # Download or update the unypkg script
+    # shellcheck disable=SC2154
+    cd "$unypkg_install_dir" || exit
+    wget -q https://github.com/unypkg/unypkg/archive/refs/heads/release.tar.gz -O- | tar xz
+    chmod +x "$unypkg_install_dir"/bin/unyp "$unypkg_install_dir"/bin/unyc
+}
+
+get_pkg_release_version_and_download_url() {
+    tags_page="$(wget -q https://github.com/unypkg/"$pkg"/tags -O-)"
+    git_tags="$(echo "$tags_page" | grep -o '/unypkg/'"$pkg"'/releases/tag/[^"]*' | sed "s|/unypkg/$pkg/releases/tag/||" | sort -ur)"
+    while ! echo "$tags_page" | grep -q "There aren’t any releases here"; do
+        after_tag="$(echo "$git_tags" | tail -n1)"
+        tags_page="$(wget -q https://github.com/unypkg/"$pkg"/tags?after="$after_tag" -O-)"
+        git_tags="$git_tags $(
+            echo
+            echo "$tags_page" | grep -o '/unypkg/'"$pkg"'/releases/tag/[^"]*' | sed "s|/unypkg/$pkg/releases/tag/||" | sort -ur
+        )"
+    done
+
+    pkg_release="$(echo "$git_tags" | sort | grep "$pkgver" | tail -n1)"
+    [ -z "$pkg_release" ] && echo "There is no release for the package $pkg with that version. Aborting." && exit
+
+    pkgver="$(echo "$pkg_release" | sed "s|-.*$||")"
+    download_url="https://github.com/unypkg/$pkg/releases/download/$pkg_release"
+}
+
+download_and_install() {
+    echo "Downloading and installing: $pkg $pkg_release"
+    [ -n "$pkgdet1" ] && pkgsdir="/$pkgdet1"
+    [ -n "$pkgdet2" ] && pkgssnode="/$pkgdet2*"
+    wget -q "$download_url/unypkg-$pkg.tar.xz" -O- |
+        tar xJ -C /uny/pkg --wildcards "$pkg"/"$pkgver""$pkgsdir""$pkgssnode" "$pkg"/"$pkgver"/.uny 2>/dev/null
+}
