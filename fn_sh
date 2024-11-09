@@ -25,6 +25,10 @@ get_pkg_release_version_and_download_url() {
         )"
     done
 
+    echo "Git Tags:"
+    echo "$git_tags"
+    echo
+    echo "Newest git tag: $(echo "$git_tags" | sort | grep "$pkgver" | tail -n1)"
     pkg_release="$(echo "$git_tags" | sort | grep "$pkgver" | tail -n1)"
     [ -z "$pkg_release" ] && echo "There is no release for the package $pkg with that version. Aborting." && exit
 
