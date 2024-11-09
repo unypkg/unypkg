@@ -7,6 +7,8 @@ update_unypkg() {
     cd "$unypkg_install_dir" || exit
     wget -q https://github.com/unypkg/unypkg/archive/refs/heads/release.tar.gz -O- | tar xz
     chmod +x "$unypkg_install_dir"/bin/unyp "$unypkg_install_dir"/bin/unyc
+    ln -sfv "$unypkg_install_dir"/bin/unyp /bin/unyp
+    ln -sfv "$unypkg_install_dir"/bin/unyc /bin/unyc
 }
 
 get_pkg_release_version_and_download_url() {

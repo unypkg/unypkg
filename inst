@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+# shellcheck disable=1091,2154,2034
 
 ### Install package manager only with some base packages:
 ### wget -qO- uny.nu/pkg | sh -s
@@ -40,14 +41,6 @@ if [ ! $bash_installed -eq 0 ]; then
     bash_from_unypkg=yes
 fi
 
-# Check if xz is installed
-xz --version >/dev/null 2>&1
-xz_installed=$?
-if [ ! $xz_installed -eq 0 ]; then
-    echo "xz not found. Installing from unypkg."
-    xz_from_unypkg=yes
-fi
-
 # Create directories and symlinks
 echo "Creating directories for unypkg under /uny."
 mkdir -pv /uny/git /uny/pkg/unypkg /uny/etc/uny /uny/tmp /uny/dev /uny/proc /uny/sys /uny/run
@@ -58,34 +51,29 @@ ln -sfvn /pkg /uny/uny/pkg
 #ln -sfvn /uny/etc /etc/uny
 #ln -sfvn /etc /uny/etc/uny
 
-wget_package_install() {
-    # shellcheck disable=SC2016
-    target_dir="${target_dir:-/uny/pkg}"
-    pkg_expr="${pkg_expr:-s|\([^/]*$\)|\1/unypkg-$unypkg.tar.xz|}"
-    release_url="$(wget -q --server-response https://github.com/unypkg/"$unypkg"/releases/latest -O- 2>&1 | grep "Location" | sed "s|  Location: ||")"
-    download_url="$(echo "$release_url" | sed -e "s|/tag/|/download/|" -e "$pkg_expr")"
-    cd "$target_dir" || exit
-    echo "Downloading and installing unypkg ${unypkg}. Please wait."
-    wget -q "$download_url" -O- | tar xJ
-    unset target_dir pkg_expr
-}
+cd /uny/pkg/unypkg || exit
+wget -q https://raw.githubusercontent.com/unypkg/unypkg/refs/heads/release/fn_sh
+. fn_sh
 
 # Download base system if specified
 if [ "$1" = "buildsys" ]; then
-    unypkg=base
-    pkg_expr='s|\([^/]*$\)|\1/unypkg-base-\1.tar.xz|'
-    target_dir=/uny
-    wget_package_install
+    echo "Downloading and installing unypkg base system."
+    pkg=base
+    get_pkg_release_version_and_download_url
+    wget -q "$download_url/unypkg-$pkg-$pkg_release.tar.xz" -O- |
+        tar xJ -C /uny 2>/dev/null
 fi
 
 # Install bash from unypkg with wget and tar only
 if [ "$bash_from_unypkg" = "yes" ] && [ ! -d /uny/pkg/bash ]; then
-    for pkg in glibc ncurses readline bash; do
-        unypkg=$pkg
-        wget_package_install
+    pkg=bash
+    get_pkg_release_version_and_download_url
+    download_and_install
+    for pkg in glibc ncurses readline; do
+        pkgsdir=/lib
+        get_pkg_release_version_and_download_url
+        download_and_install
     done
-    ln -sfv /uny/pkg/bash/*/bin/bash /bin/uny-bash
-    ln -sv uny-bash /bin/bash
 fi
 
 export unypkg_install_dir=/uny/pkg/unypkg
@@ -96,16 +84,6 @@ if [ ! -f /uny/uny/paths/include-cplus ]; then
     gcc_ver="$(wget -q --server-response https://github.com/unypkg/gcc/releases/latest -O- 2>&1 | grep "Location" | sed -e "s|  Location: ||" -e "s|^.*/||" -e "s|-.*$||")"
     include_cplus="/uny/pkg/gcc/$gcc_ver/include:/uny/pkg/gcc/$gcc_ver/include/c++/$gcc_ver"
     printf '%s' "$include_cplus" >/uny/uny/paths/include-cplus
-fi
-
-# Make unyp and unyc available to the system
-chmod +x /uny/git/unypkg/bin/unyp /uny/git/unypkg/bin/unyc
-ln -sfv /uny/git/unypkg/bin/unyp /bin/unyp
-ln -sfv /uny/git/unypkg/bin/unyc /bin/unyc
-
-# Intall xz from unypkg
-if [ "$xz_from_unypkg" = "yes" ]; then
-    unyp system-install xz
 fi
 
 # Set PATH and functions on login in uny chroot
