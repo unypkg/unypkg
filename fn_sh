@@ -6,7 +6,7 @@ update_unypkg() {
     # shellcheck disable=SC2154
     cd "$unypkg_install_dir" || exit
     wget -q https://github.com/unypkg/unypkg/archive/refs/heads/release.tar.gz -O- | tar xz
-    mv -v unypkg-release/* .
+    cp -a unypkg-release/* .
     rm -rf unypkg-release
     chmod +x "$unypkg_install_dir"/bin/unyp "$unypkg_install_dir"/bin/unyc
     ln -sfv "$unypkg_install_dir"/bin/unyp /bin/unyp
