@@ -5,19 +5,19 @@ update_unypkg() {
     # Download or update the unypkg script
     # shellcheck disable=SC2154
     cd "$unypkg_install_dir" || exit
+    [ -d unypkg ] && rm -rf unypkg
     wget -q https://github.com/unypkg/unypkg/archive/refs/heads/release.tar.gz -O- | tar xz
-    chmod +x "$unypkg_install_dir"/bin/unyp "$unypkg_install_dir"/bin/unyc
-    ln -sfv "$unypkg_install_dir"/bin/unyp /bin/unyp
-    ln -sfv "$unypkg_install_dir"/bin/unyc /bin/unyc
+    mv -v unypkg-release unypkg
+    chmod +x "$unypkg_install_dir"/unypkg/bin/unyp "$unypkg_install_dir"/unypkg/bin/unyc
+    ln -sfv "$unypkg_install_dir"/unypkg/bin/unyp /bin/unyp
+    ln -sfv "$unypkg_install_dir"/unypkg/bin/unyc /bin/unyc
 }
 
 get_pkg_release_version_and_download_url() {
-    echo "Tags page status code: $(wget -S https://github.com/unypkg/"$pkg"/tags -O- 2>&1 | grep -o "HTTP.*" | sed -e "s|HTTP[^ ]* ||" -e "s|[^0-9].*||")"
     tags_page="$(wget -q https://github.com/unypkg/"$pkg"/tags -O-)"
     git_tags="$(echo "$tags_page" | grep -o '/unypkg/'"$pkg"'/releases/tag/[^"]*' | sed "s|/unypkg/$pkg/releases/tag/||" | sort -ur)"
     while ! echo "$tags_page" | grep -q "There aren’t any releases here"; do
         after_tag="$(echo "$git_tags" | tail -n1)"
-        echo "Tags page after $after_tag status code: $(wget -S https://github.com/unypkg/"$pkg"/tags?after="$after_tag" -O- 2>&1 | grep -o "HTTP.*" | sed -e "s|HTTP[^ ]* ||" -e "s|[^0-9].*||")"
         tags_page="$(wget -q https://github.com/unypkg/"$pkg"/tags?after="$after_tag" -O-)"
         git_tags="$git_tags $(
             echo
@@ -25,14 +25,8 @@ get_pkg_release_version_and_download_url() {
         )"
     done
 
-    echo "Git Tags:"
-    echo "$git_tags"
-
-    echo "Newest git tag: $(echo "$git_tags" | sort | grep "$pkgveropt" | tail -n1)"
     pkg_release="$(echo "$git_tags" | sort | grep "$pkgveropt" | tail -n1)"
-
     [ -z "$pkg_release" ] && echo "There is no release for the package $pkg with that version. Aborting." && return #exit
-
     pkgver="$(echo "$pkg_release" | sed "s|-.*$||")"
     download_url="https://github.com/unypkg/$pkg/releases/download/$pkg_release"
 }
