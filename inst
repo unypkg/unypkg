@@ -43,7 +43,7 @@ fi
 
 # Create directories and symlinks
 echo "Creating directories for unypkg under /uny."
-mkdir -pv /uny/git /uny/pkg /uny/etc/uny /uny/tmp /uny/dev /uny/proc /uny/sys /uny/run
+mkdir -pv /uny/git /uny/pkg/unypkg /uny/etc/uny /uny/tmp /uny/dev /uny/proc /uny/sys /uny/run
 mkdir -pv /uny/uny/paths /uny/uny/root /uny/usr/bin
 mkdir -pv /etc/uny /opt/uny
 ln -sfvn /git /uny/uny/git
@@ -79,7 +79,7 @@ if [ "$bash_from_unypkg" = "yes" ] && [ ! -d /uny/pkg/bash ]; then
     ln -sfv /bin/uny-bash /bin/bash
 fi
 
-export unypkg_install_dir=/uny/pkg
+export unypkg_install_dir=/uny/pkg/unypkg
 update_unypkg
 
 # Make include-cplus file if it does not exist
