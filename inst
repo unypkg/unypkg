@@ -73,6 +73,10 @@ if [ "$bash_from_unypkg" = "yes" ] && [ ! -d /uny/pkg/bash ]; then
         get_pkg_release_version_and_download_url
         download_and_install
     done
+
+    [ -f /bin/bash ] && mv -v /bin/bash /bin/bash_backup
+    ln -sfv /uny/pkg/bash/*/bin/bash /bin/uny-bash
+    ln -sfv /bin/uny-bash /bin/bash
 fi
 
 export unypkg_install_dir=/uny/pkg
@@ -87,14 +91,13 @@ fi
 
 # Set PATH and functions on login in uny chroot
 tee /uny/uny/root/.profile <<'EOF'
-source /uny/git/unypkg/fn
+source /uny/pkg/unypkg/fn
 uny_env_paths
 EOF
 
 # Create shell skeleton if not there
 if [ ! "$1" = "buildsys" ]; then
     unyp system-install coreutils
-    unyp system-install bash
 
     cat >/uny/etc/passwd <<"EOF"
 root:x:0:0:root:/uny/root:/bin/bash
