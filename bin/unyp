@@ -16,30 +16,30 @@ function parse_pkg_options {
             if [[ $pkgopt == *'/'*'/'*'/'* ]]; then
                 if [[ $pkgopt == *'/'*'/'*'/'*'/'* ]]; then
                     # Five options given, 4 slashes
-                    pkg="$(echo "$pkgopt" | cut --field=1 --delimiter="/")"
-                    pkgveropt="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
-                    pkgdet1="$(echo "$pkgopt" | cut --field=3 --delimiter="/")"
-                    pkgdet2="$(echo "$pkgopt" | cut --field=4 --delimiter="/")"
-                    pkgdet3="$(echo "$pkgopt" | cut --field=5 --delimiter="/")"
+                    pkg="$(echo "$pkgopt" | cut -f 1 -d "/")"
+                    pkgveropt="$(echo "$pkgopt" | cut -f 2 -d "/")"
+                    pkgdet1="$(echo "$pkgopt" | cut -f 3 -d "/")"
+                    pkgdet2="$(echo "$pkgopt" | cut -f 4 -d "/")"
+                    pkgdet3="$(echo "$pkgopt" | cut -f 5 -d "/")"
                 else
                     # Four options given, 3 slashes
-                    pkg="$(echo "$pkgopt" | cut --field=1 --delimiter="/")"
-                    pkgveropt="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
-                    pkgdet1="$(echo "$pkgopt" | cut --field=3 --delimiter="/")"
-                    pkgdet2="$(echo "$pkgopt" | cut --field=4 --delimiter="/")"
+                    pkg="$(echo "$pkgopt" | cut -f 1 -d "/")"
+                    pkgveropt="$(echo "$pkgopt" | cut -f 2 -d "/")"
+                    pkgdet1="$(echo "$pkgopt" | cut -f 3 -d "/")"
+                    pkgdet2="$(echo "$pkgopt" | cut -f 4 -d "/")"
                     unset pkgdet3
                 fi
             else
                 # Three options given, 2 slashes
-                pkg="$(echo "$pkgopt" | cut --field=1 --delimiter="/")"
-                pkgveropt="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
-                pkgdet1="$(echo "$pkgopt" | cut --field=3 --delimiter="/")"
+                pkg="$(echo "$pkgopt" | cut -f 1 -d "/")"
+                pkgveropt="$(echo "$pkgopt" | cut -f 2 -d "/")"
+                pkgdet1="$(echo "$pkgopt" | cut -f 3 -d "/")"
                 unset pkgdet2 pkgdet3
             fi
         else
             # Two options given, 1 slash
-            pkg="$(echo "$pkgopt" | cut --field=1 --delimiter="/")"
-            pkgveropt="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
+            pkg="$(echo "$pkgopt" | cut -f 1 -d "/")"
+            pkgveropt="$(echo "$pkgopt" | cut -f 2 -d "/")"
             unset pkgdet1 pkgdet2 pkgdet3
         fi
     else
