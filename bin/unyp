@@ -136,13 +136,19 @@ function system_install_packages {
         if [[ -z ${bin_items[0]} ]]; then
             echo "No executables found in installed package $pkg. Doing nothing."
         else
+            ln="ln"
+            for lnfile in /uny/pkg/coreutils/*/bin/ln; do
+                if [[ -e "$lnfile" ]]; then
+                    ln="$lnfile"
+                fi
+            done
             for bin_item in "${bin_items[@]}"; do
                 basename_bin_item="$(basename "$bin_item")"
                 dirname_bin_item="$(dirname "$bin_item")"
                 base_dirname_bin_item="$(basename "$dirname_bin_item")"
 
                 echo "Linking /$base_dirname_bin_item/uny-$basename_bin_item to $bin_item"
-                ln -sfv "$bin_item" /"$base_dirname_bin_item"/uny-"$basename_bin_item"
+                $ln -sfv "$bin_item" /"$base_dirname_bin_item"/uny-"$basename_bin_item"
 
                 if [[ -L /$base_dirname_bin_item/$basename_bin_item ]]; then
                     echo "Backing up existing Link to $base_dirname_bin_item/${basename_bin_item}_backup"
@@ -150,7 +156,7 @@ function system_install_packages {
                 fi
                 if [[ ! -e /$base_dirname_bin_item/$basename_bin_item ]]; then
                     echo "Linking /$base_dirname_bin_item/$basename_bin_item to /$base_dirname_bin_item/uny-$basename_bin_item"
-                    ln -sfv uny-"$basename_bin_item" /"$base_dirname_bin_item"/"$basename_bin_item"
+                    $ln -sfv uny-"$basename_bin_item" /"$base_dirname_bin_item"/"$basename_bin_item"
                 fi
                 echo ""
             done

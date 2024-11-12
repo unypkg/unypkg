@@ -44,7 +44,7 @@ fi
 # Create directories and symlinks
 echo "Creating directories for unypkg under /uny."
 mkdir -pv /uny/git /uny/pkg /uny/etc/uny /uny/tmp /uny/dev /uny/proc /uny/sys /uny/run
-mkdir -pv /uny/uny/paths /uny/uny/root
+mkdir -pv /uny/uny/paths /uny/uny/root /uny/usr/bin
 mkdir -pv /etc/uny /opt/uny
 ln -sfvn /git /uny/uny/git
 ln -sfvn /pkg /uny/uny/pkg
@@ -97,7 +97,7 @@ EOF
 
 # Create shell skeleton if not there
 if [ ! "$1" = "buildsys" ]; then
-    unyp system-install coreutils
+    #unyp system-install coreutils
 
     cat >/uny/etc/passwd <<"EOF"
 root:x:0:0:root:/uny/root:/bin/bash
