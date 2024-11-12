@@ -55,7 +55,7 @@ function install_packages {
         parse_pkg_options
 
         # Pre download checks
-        if [[ $(wget -S https://github.com/unypkg/"$pkg" -O- 2>&1 | grep -o "HTTP.*" | sed -e "s|HTTP[^ ]* ||" -e "s|[^0-9].*||") != 200 ]]; then
+        if [[ $(wget -S https://github.com/unypkg/"$pkg" -O- 2>&1 | grep -o "HTTP/.*" | sed -e "s|HTTP[^ ]* ||" -e "s|[^0-9].*||") != 200 ]]; then
             echo "unypkg repo https://github.com/unypkg/$pkg does not seem to exist. Aborting." && exit
         fi
         if [[ $pkgveropt == "latest" ]]; then
