@@ -51,7 +51,6 @@ ln -sfvn /pkg /uny/uny/pkg
 #ln -sfvn /uny/etc /etc/uny
 #ln -sfvn /etc /uny/etc/uny
 
-cd /uny/pkg/unypkg || exit
 fn_sh="$(wget -q https://raw.githubusercontent.com/unypkg/unypkg/refs/heads/release/fn_sh -O- | tac | tac)"
 eval "$fn_sh"
 
