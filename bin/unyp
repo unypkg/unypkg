@@ -17,14 +17,14 @@ function parse_pkg_options {
                 if [[ $pkgopt == *'/'*'/'*'/'*'/'* ]]; then
                     # Five options given, 4 slashes
                     pkg="$(echo "$pkgopt" | cut --field=1 --delimiter="/")"
-                    pkgver="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
+                    pkgveropt="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
                     pkgdet1="$(echo "$pkgopt" | cut --field=3 --delimiter="/")"
                     pkgdet2="$(echo "$pkgopt" | cut --field=4 --delimiter="/")"
                     pkgdet3="$(echo "$pkgopt" | cut --field=5 --delimiter="/")"
                 else
                     # Four options given, 3 slashes
                     pkg="$(echo "$pkgopt" | cut --field=1 --delimiter="/")"
-                    pkgver="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
+                    pkgveropt="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
                     pkgdet1="$(echo "$pkgopt" | cut --field=3 --delimiter="/")"
                     pkgdet2="$(echo "$pkgopt" | cut --field=4 --delimiter="/")"
                     unset pkgdet3
@@ -32,14 +32,14 @@ function parse_pkg_options {
             else
                 # Three options given, 2 slashes
                 pkg="$(echo "$pkgopt" | cut --field=1 --delimiter="/")"
-                pkgver="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
+                pkgveropt="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
                 pkgdet1="$(echo "$pkgopt" | cut --field=3 --delimiter="/")"
                 unset pkgdet2 pkgdet3
             fi
         else
             # Two options given, 1 slash
             pkg="$(echo "$pkgopt" | cut --field=1 --delimiter="/")"
-            pkgver="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
+            pkgveropt="$(echo "$pkgopt" | cut --field=2 --delimiter="/")"
             unset pkgdet1 pkgdet2 pkgdet3
         fi
     else
@@ -58,8 +58,8 @@ function install_packages {
         if [[ $(wget -S https://github.com/unypkg/"$pkg" -O- 2>&1 | grep -o "HTTP.*" | sed -e "s|HTTP[^ ]* ||" -e "s|[^0-9].*||") != 200 ]]; then
             echo "unypkg repo https://github.com/unypkg/$pkg does not seem to exist. Aborting." && exit
         fi
-        if [[ $pkgver == "latest" ]]; then
-            pkgver=""
+        if [[ $pkgveropt == "latest" ]]; then
+            pkgveropt=""
         fi
 
         get_pkg_release_version_and_download_url

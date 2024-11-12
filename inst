@@ -52,8 +52,8 @@ ln -sfvn /pkg /uny/uny/pkg
 #ln -sfvn /etc /uny/etc/uny
 
 cd /uny/pkg/unypkg || exit
-wget -q https://raw.githubusercontent.com/unypkg/unypkg/refs/heads/release/fn_sh
-. fn_sh
+fn_sh="$(wget -q https://raw.githubusercontent.com/unypkg/unypkg/refs/heads/release/fn_sh -O- | tac | tac)"
+eval "$fn_sh"
 
 # Download base system if specified
 if [ "$1" = "buildsys" ]; then
