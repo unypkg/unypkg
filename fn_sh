@@ -19,7 +19,7 @@ get_pkg_release_version_and_download_url() {
     while ! echo "$tags_page" | grep -q "There aren’t any releases here"; do
         after_tag="$(echo "$git_tags" | tail -n1)"
         tags_page=$(wget -q -O- "https://github.com/unypkg/${pkg}/tags?after=${after_tag}")
-        if echo "$tags_page" | grep -o '/unypkg/'"$pkg"'/releases/tag/[^"]*'; then
+        if echo "$tags_page" | grep -qo '/unypkg/'"$pkg"'/releases/tag/[^"]*'; then
             git_tags="$git_tags $(
                 echo
                 echo "$tags_page" | grep -o '/unypkg/'"$pkg"'/releases/tag/[^"]*' | sed "s|/unypkg/$pkg/releases/tag/||" | sort -ur
