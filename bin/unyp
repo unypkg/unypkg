@@ -59,7 +59,7 @@ function install_packages {
 
         # Pre download checks
         if [[ $(wget -S https://github.com/unypkg/"$pkg" -O- 2>&1 | grep -o "HTTP/.*" | sed -e "s|HTTP[^ ]* ||" -e "s|[^0-9].*||") != 200 ]]; then
-            echo "unypkg repo https://github.com/unypkg/$pkg does not seem to exist. Aborting." && exit
+            echo "${print_indent}unypkg repo https://github.com/unypkg/$pkg does not seem to exist. Aborting." && exit
         fi
         if [[ $pkgveropt == "latest" ]]; then
             pkgveropt=""
@@ -77,19 +77,21 @@ function install_packages {
 
         # Download dependencies of package
         function install_dependencies {
-            echo "    Installing dependencies for $pkg/$pkgver"
+            echo "${print_indent}    Installing dependencies for $pkg/$pkgver"
             deps="$(sed "s|unypkg/||g" "$rdep_file")"
             for dep in $deps; do
                 if [[ -d /uny/pkg/"$dep" ]]; then
-                    echo "      $dep is already installed."
+                    echo "${print_indent}      $dep is already installed."
                 else
+                    export print_indent="      "
                     unyp install "$dep"/lib
+                    export print_indent=""
                 fi
             done
         }
 
         if [[ $pkgdet1 =~ ^("nd"|"nodep")$ || $pkgdet2 =~ ^("nd"|"nodep")$ || $pkgdet3 =~ ^("nd"|"nodep")$ ]]; then
-            echo "    Not installing dependencies for $pkg/$pkgver"
+            echo "${print_indent}    Not installing dependencies for $pkg/$pkgver"
         else
             if [[ -s /uny/pkg/"$pkg"/"$pkgver"/rdep ]]; then
                 rdep_file=/uny/pkg/"$pkg"/"$pkgver"/rdep
@@ -98,7 +100,7 @@ function install_packages {
                 rdep_file=/uny/pkg/"$pkg"/"$pkgver"/.uny/rdep
                 install_dependencies
             else
-                echo "    No run dependencies file rdep found for package $pkg. Not downloading any dependencies."
+                echo "${print_indent}    No run dependencies file rdep found for package $pkg. Not downloading any dependencies."
             fi
         fi
 
