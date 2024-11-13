@@ -61,7 +61,10 @@ if [ "$1" = "buildsys" ]; then
     get_pkg_release_version_and_download_url
     wget -q "$download_url/unypkg-$pkg-$pkg_release.tar.xz" -O- |
         tar xJ -C /uny 2>/dev/null
+
     [ -d /uny/git/unypkg ] && rm -rf /uny/git/unypkg
+    mkdir -pv /uny/git/unypkg
+    ln -sfv /uny/pkg/unypkg/fn /uny/git/unypkg/fn
 fi
 
 # Install bash from unypkg with wget and tar only
