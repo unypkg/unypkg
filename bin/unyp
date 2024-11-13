@@ -2,7 +2,10 @@
 # shellcheck disable=1090,1091,2001,2034,2154
 
 unyp_dir="$(dirname "$(readlink "$0")")"
-export unypkg_install_dir="$unyp_dir/.."
+unypkg_install_dir="$(
+    cd "$unyp_dir/.." || exit
+    pwd
+)"
 
 shopt -s extglob
 source "$unypkg_install_dir"/help
