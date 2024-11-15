@@ -4,13 +4,20 @@
 update_unypkg() {
     # Download or update the unypkg script
     # shellcheck disable=SC2154
+    echo "Updating the unypkg script."
     cd "$unypkg_install_dir" || exit
     wget -q https://github.com/unypkg/unypkg/archive/refs/heads/release.tar.gz -O- | tar xz
+    update_success="$?"
     cp -a unypkg-release/* .
     rm -rf unypkg-release
     chmod +x "$unypkg_install_dir"/bin/unyp "$unypkg_install_dir"/bin/unyc
-    ln -sfv "$unypkg_install_dir"/bin/unyp /bin/unyp
-    ln -sfv "$unypkg_install_dir"/bin/unyc /bin/unyc
+    ln -sf "$unypkg_install_dir"/bin/unyp /bin/unyp
+    ln -sf "$unypkg_install_dir"/bin/unyc /bin/unyc
+    if [ "$update_success" = 0 ]; then
+        echo "Successfully updated unypkg."
+    else
+        echo "Something went wrong, unypkg did not update right."
+    fi
 }
 
 get_pkg_release_version_and_download_url() {
