@@ -16,8 +16,8 @@ if [ "$(id -u)" -gt 0 ]; then
 fi
 
 # Check if /uny folder already exists
-if [ -d /uny ]; then
-    echo "/uny folder already exists. Exiting..."
+if [ -d /uny/pkg ]; then
+    echo "/uny/pkg folder already exists. Exiting..."
     exit
 fi
 
@@ -45,7 +45,7 @@ fi
 
 # Create directories and symlinks
 echo "Creating directories for unypkg under /uny."
-mkdir -p /uny/git /uny/pkg/unypkg /uny/etc/uny /uny/tmp /uny/dev /uny/proc /uny/sys /uny/run
+mkdir -p /uny/pkg/unypkg /uny/etc/uny /uny/tmp /uny/dev /uny/proc /uny/sys /uny/run /uny/git
 mkdir -p /uny/uny/paths /uny/uny/root /uny/usr/bin
 mkdir -p /etc/uny /opt/uny
 ln -sfn /git /uny/uny/git
