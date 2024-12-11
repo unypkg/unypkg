@@ -157,7 +157,7 @@ function system_install_packages {
 
                 if [[ -L /$base_dirname_bin_item/$basename_bin_item ]]; then
                     echo "Backing up existing Link to $base_dirname_bin_item/${basename_bin_item}_backup"
-                    mv -v /"$base_dirname_bin_item"/"$basename_bin_item" /"$base_dirname_bin_item"/"$basename_bin_item"_backup
+                    mv -fv /"$base_dirname_bin_item"/"$basename_bin_item" /"$base_dirname_bin_item"/"$basename_bin_item"_backup
                 fi
                 if [[ ! -e /$base_dirname_bin_item/$basename_bin_item ]]; then
                     echo "Linking /$base_dirname_bin_item/$basename_bin_item to /$base_dirname_bin_item/uny-$basename_bin_item"
