@@ -133,11 +133,18 @@ function system_install_packages {
         fi
 
         pkg_base=(/uny/pkg/"$pkg"/*)
+
+        if echo "${pkg_base[0]}" | grep -q "//"; then
+            echo "Something went wrong finding the package folder. Aborting."
+            exit 1
+        fi
+
         shopt -s nullglob
         declare -a bin_items
         for bin_item in "${pkg_base[0]}"/bin/* "${pkg_base[0]}"/sbin/*; do
             bin_items+=("$bin_item")
         done
+
         if [[ -z ${bin_items[0]} ]]; then
             echo "No executables found in installed package $pkg. Doing nothing."
         else
