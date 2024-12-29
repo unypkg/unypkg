@@ -279,20 +279,22 @@ function get_include_paths {
 }
 
 function dependencies_file_and_unset_vars {
-    for o in /uny/pkg/"$pkgname"/"$pkgver"/{lib,bin,sbin}/*; do
-        if [[ ! -L $o && -f $o ]]; then
-            echo "Shared objects required by: $o"
-            ldd "$o"
-            ldd "$o" | grep -v "$pkgname/$pkgver" | sed "s|^.*ld-linux.*||" | grep -o "uny/pkg\(.*\)" | sed -e "s+uny/pkg/+unypkg/+" | grep -Eo "(unypkg/[a-z0-9_-]+/[0-9.]*)" | sort -u >>/uny/pkg/"$pkgname"/"$pkgver"/rdep
-        fi
-    done
+    while IFS= read -r -d '' o; do
+        echo
+        echo "Shared objects required by: $o"
+        ldd "$o"
+        ldd "$o" | grep -v "$pkgname/$pkgver" | sed "s|^.*ld-linux.*||" | grep -o "uny/pkg\(.*\)" | sed -e "s+uny/pkg/+unypkg/+" | grep -Eo "(unypkg/[a-z0-9_-]+/[0-9.]*)" | sort -u >>/uny/pkg/"$pkgname"/"$pkgver"/rdep
+    done < <(find /uny/pkg/"$pkgname"/"$pkgver" -executable -type f)
+
     sort -u /uny/pkg/"$pkgname"/"$pkgver"/rdep -o /uny/pkg/"$pkgname"/"$pkgver"/rdep
+
     if [[ -n ${manual_deps[*]} ]]; then
         for mandep in "${manual_deps[@]}"; do
             mandep_ver="$(basename /uny/pkg/"$mandep"/*)"
             echo unypkg/"$mandep"/"$mandep_ver" >>/uny/pkg/"$pkgname"/"$pkgver"/rdep
         done
     fi
+
     echo "Packages required by unypkg/$pkgname/$pkgver:"
     cat /uny/pkg/"$pkgname"/"$pkgver"/rdep
 
