@@ -313,11 +313,9 @@ function cleanup_verbose_off_timing_end {
 #############################################################################################################################
 ### Stripping and packaging functions
 function binary_stripping {
-    for i in $(find /uny/pkg/$pkgname/$latest_ver/lib -type f -name '*.so*' ! -name '*dbg') \
-        $(find /uny/pkg/$pkgname/$latest_ver/lib -type f -name '*.a') \
-        $(find /uny/pkg/$pkgname/$latest_ver/{bin,sbin,libexec,cmd} -type f); do
+    while IFS= read -r -d '' i; do
         strip --strip-unneeded $i
-    done
+    done < <(find /uny/pkg/"$pkgname"/"$pkgver" -executable -type f)
 }
 
 function github_release {
