@@ -48,7 +48,7 @@ function parse_pkg_options {
     else
         # One option given, no slashes
         pkg="$pkgopt"
-        unset pkgver pkgdet1 pkgdet2 pkgdet3
+        unset pkgveropt pkgdet1 pkgdet2 pkgdet3
     fi
 }
 
