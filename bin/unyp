@@ -110,8 +110,8 @@ function install_packages {
         fi
 
         # Add to paths files
-        for usrpath in /uny/pkg/"$pkg"/*/!(vdet|rdep); do
-            pkgver="$(echo "$usrpath" | sed -e "s|.*$pkg/||" -e "s|/.*||")"
+        for usrpath in /uny/pkg/"$pkg"/"$pkgver"/!(vdet|rdep); do
+            #pkgver="$(echo "$usrpath" | sed -e "s|.*$pkg/||" -e "s|/.*||")"
             pathtype="$(basename "$usrpath")"
             [[ ! -f /uny/uny/paths/$pathtype ]] && touch /uny/uny/paths/"$pathtype"
             if grep -q "/$pkg/[^/:]*" /uny/uny/paths/"$pathtype"; then
