@@ -313,7 +313,7 @@ function cleanup_verbose_off_timing_end {
 function binary_stripping {
     for i in $(find /uny/pkg/$pkgname/$latest_ver/lib -type f -name '*.so*' ! -name '*dbg') \
         $(find /uny/pkg/$pkgname/$latest_ver/lib -type f -name '*.a') \
-        $(find /uny/pkg/$pkgname/$latest_ver/{bin,sbin,libexec} -type f); do
+        $(find /uny/pkg/$pkgname/$latest_ver/{bin,sbin,libexec,cmd} -type f); do
         strip --strip-unneeded $i
     done
 }
