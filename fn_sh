@@ -34,7 +34,7 @@ get_pkg_release_version_and_download_url() {
         fi
     done
 
-    pkg_release="$(echo "$git_tags" | sort | grep "$pkgveropt" | tail -n1)"
+    pkg_release="$(echo "$git_tags" | sort | grep "^$pkgveropt" | tail -n1)"
     [ -z "$pkg_release" ] && echo "There is no release for the package $pkg with that version. Aborting." && return #exit
     pkgver="$(echo "$pkg_release" | sed "s|-.*$||")"
     download_url="https://github.com/unypkg/$pkg/releases/download/$pkg_release"
