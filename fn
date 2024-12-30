@@ -279,12 +279,15 @@ function get_include_paths {
 }
 
 function dependencies_file_and_unset_vars {
-    while IFS= read -r -d '' o; do
-        echo
-        echo "Shared objects required by: $o"
-        ldd "$o"
-        ldd "$o" | grep -v "$pkgname/$pkgver" | sed "s|^.*ld-linux.*||" | grep -o "uny/pkg\(.*\)" | sed -e "s+uny/pkg/+unypkg/+" | grep -Eo "(unypkg/[a-z0-9_-]+/[0-9.]*)" | sort -u >>/uny/pkg/"$pkgname"/"$pkgver"/rdep
-    done < <(find /uny/pkg/"$pkgname"/"$pkgver" -executable -type f)
+    executables="$(find /uny/pkg/"$pkgname"/"$pkgver" -executable -type f)"
+    for o in $executables; do
+        if [[ ! -L $o && -f $o ]]; then
+            echo
+            echo "Shared objects required by: $o"
+            ldd "$o"
+            ldd "$o" | grep -v "$pkgname/$pkgver" | sed "s|^.*ld-linux.*||" | grep -o "uny/pkg\(.*\)" | sed -e "s+uny/pkg/+unypkg/+" | grep -Eo "(unypkg/[a-z0-9_-]+/[0-9.]*)" | sort -u >>/uny/pkg/"$pkgname"/"$pkgver"/rdep
+        fi
+    done
 
     sort -u /uny/pkg/"$pkgname"/"$pkgver"/rdep -o /uny/pkg/"$pkgname"/"$pkgver"/rdep
 
@@ -313,9 +316,11 @@ function cleanup_verbose_off_timing_end {
 #############################################################################################################################
 ### Stripping and packaging functions
 function binary_stripping {
-    while IFS= read -r -d '' i; do
+    executables="$(find /uny/pkg/"$pkgname"/"$pkgver" -executable -type f)"
+    for i in $executables; do
+        echo "stripping: $i"
         strip --strip-unneeded $i
-    done < <(find /uny/pkg/"$pkgname"/"$pkgver" -executable -type f)
+    done
 }
 
 function github_release {
