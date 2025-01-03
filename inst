@@ -17,7 +17,7 @@ fi
 
 # Check if /uny folder already exists
 if [ -d /uny/pkg ]; then
-    echo "/uny/pkg folder already exists. Exiting..."
+    echo "/uny/pkg folder already exists. Exiting unypkg installation..."
     exit
 fi
 
@@ -26,7 +26,7 @@ for app in wget tar grep sed; do
     type $app >/dev/null 2>&1
     installed=$?
     if [ ! $installed -eq 0 ]; then
-        echo "$app has to be installed. Exiting..."
+        echo "$app has to be installed. Exiting unypkg installation..."
         exit
     fi
 done
