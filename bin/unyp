@@ -162,12 +162,12 @@ function system_install_packages {
                 echo "Linking /$base_dirname_bin_item/uny-$basename_bin_item to $bin_item"
                 $ln -sfv "$bin_item" /"$base_dirname_bin_item"/uny-"$basename_bin_item"
 
-                if [[ -L /$base_dirname_bin_item/$basename_bin_item ]]; then
+                base_dir_and_bin="/$base_dirname_bin_item/$basename_bin_item"
+                if [[ -L $base_dir_and_bin && ! $(readlink "$base_dir_and_bin") == "uny-$basename_bin_item" ]]; then
                     echo "Backing up existing Link to $base_dirname_bin_item/${basename_bin_item}_backup"
                     mv -fv /"$base_dirname_bin_item"/"$basename_bin_item" /"$base_dirname_bin_item"/"$basename_bin_item"_backup
-                fi
-                if [[ ! -e /$base_dirname_bin_item/$basename_bin_item ]]; then
-                    echo "Linking /$base_dirname_bin_item/$basename_bin_item to /$base_dirname_bin_item/uny-$basename_bin_item"
+                elif [[ ! -e $base_dir_and_bin ]]; then
+                    echo "Linking $base_dir_and_bin to /$base_dirname_bin_item/uny-$basename_bin_item"
                     $ln -sfv uny-"$basename_bin_item" /"$base_dirname_bin_item"/"$basename_bin_item"
                 fi
                 echo ""
