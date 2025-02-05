@@ -70,6 +70,7 @@ function install_packages {
         # Run preinstallation script
         pre_install_url="https://raw.githubusercontent.com/unypkg/$pkg/$pkg_release/0_pre_install_script.sh"
         if wget -S "$pre_install_url" -O- 2>&1 | grep -q '200 OK'; then
+            echo "Running pre-installation script of package $pkg."
             wget -q "$pre_install_url" -O- | bash
         fi
 
@@ -106,6 +107,7 @@ function install_packages {
 
         # Run post installation script
         if [[ -s /uny/pkg/"$pkg"/"$pkgver"/.uny/1_post_install_script.sh ]]; then
+            echo "Running post-installation script of package $pkg."
             source /uny/pkg/"$pkg"/"$pkgver"/.uny/1_post_install_script.sh
         fi
 
