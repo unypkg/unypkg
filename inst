@@ -22,7 +22,7 @@ if [ -d /uny/pkg ]; then
 fi
 
 # Check if wget, tar and sed are there
-for app in wget tar grep sed; do
+for app in wget tar grep sed xz; do
     type $app >/dev/null 2>&1
     installed=$?
     if [ ! $installed -eq 0 ]; then
