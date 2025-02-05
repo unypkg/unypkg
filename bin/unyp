@@ -136,7 +136,7 @@ function system_install_packages {
 
         pkg_base=(/uny/pkg/"$pkg"/*)
 
-        if echo "${pkg_base[0]}" | grep -q "//"; then
+        if ! ls "${pkg_base[0]}" 1>/dev/null 2>&1; then
             echo "Something went wrong finding the package folder. Aborting."
             exit 1
         fi
