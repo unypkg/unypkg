@@ -46,4 +46,5 @@ download_and_install() {
     [ -n "$pkgdet2" ] && pkgnode="/$pkgdet2"
     [ -n "$pkgdet3" ] && pkgnode="/$pkgdet2/$pkgdet3"
     wget -q "$download_url/unypkg-$pkg.tar.xz" -O- | tar xJ -C /uny/pkg "$pkg"/"$pkgver""$pkgsdir""$pkgnode" "$pkg"/"$pkgver"/.uny 2>/dev/null
+    [ ! -d /uny/pkg/"$pkg"/"$pkgver" ] && echo "Package installation failed."
 }
