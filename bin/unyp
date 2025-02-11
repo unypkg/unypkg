@@ -53,8 +53,8 @@ function parse_pkg_options {
 }
 
 function install_packages {
-    packages=("$@")
-    for pkgopt in "${packages[@]}"; do
+    parameters=("$@")
+    for pkgopt in "${parameters[@]}"; do
         parse_pkg_options
 
         # Pre download checks
@@ -63,6 +63,15 @@ function install_packages {
         fi
         if [[ $pkgveropt == "latest" ]]; then
             pkgveropt=""
+        fi
+        if [[ $pkgveropt == *rdep-* ]]; then
+            pkgrdep="$(echo "$pkgveropt" | grep -Eo "rdep.*" | sed -e "s|rdep||" -e "s|_|/|g" -e "s|-| |g")"
+            pkgrdeplist="$(for i in $pkgrdep; do echo "$i" | tr -d " "; done)"
+            pkgveropt="$(echo "$pkgveropt" | grep -Eo "^[0-9a-z.]+" | sed "s|rdep||")"
+        fi
+        if echo "$pkgveropt" | grep -qE "[_]"; then
+            echo "You need to specify the package version as package/1.1.1w, package/1.1.1w-rdep-openssl_1.1.1w-anotherapp_2.0 or package/latest"
+            echo "Aborting" && exit 1
         fi
 
         get_pkg_release_version_and_download_url

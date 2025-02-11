@@ -34,7 +34,42 @@ get_pkg_release_version_and_download_url() {
         fi
     done
 
-    pkg_release="$(echo "$git_tags" | sort | grep "^$pkgveropt" | tail -n1 | tr -d "[:space:]")"
+    pkg_version_releases="$(echo "$git_tags" | sort -uVr | grep "^$pkgveropt" | tr -d " ")"
+
+    if [ ! "$pkgrdeplist" = "" ]; then
+        relsdir="$(mktemp -d)"
+
+        for rel in $pkg_version_releases; do
+            wget -q https://github.com/unypkg/"$pkg"/releases/download/"$rel"/rdep -O "$relsdir"/"$rel"
+        done
+
+        for rdep in $pkgrdeplist; do
+            for relrdep in "$relsdir"/*; do
+                if grep -q "$rdep" "$relrdep"; then
+                    relmatch="${relmatch}${rdep} $(basename "$relrdep")
+"
+                fi
+            done
+        done
+
+        pkgrdeplist_count="$(echo "$pkgrdeplist" | wc -w)"
+        for release in $pkg_version_releases; do
+            if [ "$(echo "$relmatch" | grep -c "$release")" = "$pkgrdeplist_count" ]; then
+                rdep_releases="${rdep_releases}${release}
+"
+            fi
+        done
+
+        if [ "$rdep_releases" = "" ]; then
+            echo "No release with your specified run dependency (rdep) was found for package $pkg. Doing nothing."
+            return
+        else
+            pkg_version_releases="$rdep_releases"
+        fi
+        unset relmatch rdep_releases
+    fi
+
+    pkg_release="$(echo "$pkg_version_releases" | sort -V | tail -n1 | tr -d "[:space:]")"
     [ -z "$pkg_release" ] && echo "There is no release for the package $pkg with that version. Aborting." && return #exit
     pkgver="$(echo "$pkg_release" | sed "s|-.*$||")"
     download_url="https://github.com/unypkg/$pkg/releases/download/$pkg_release"
