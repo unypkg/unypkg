@@ -62,11 +62,10 @@ get_pkg_release_version_and_download_url() {
 
         if [ "$rdep_releases" = "" ]; then
             echo "No release with your specified run dependency (rdep) was found for package $pkg. Doing nothing."
-            exit 1
         else
             pkg_version_releases="$rdep_releases"
         fi
-        unset relmatch rdep_releases
+        unset relmatch rdep_releases pkgrdeplist
     fi
 
     pkg_release="$(echo "$pkg_version_releases" | sort -V | tail -n1 | tr -d "[:space:]")"
