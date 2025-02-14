@@ -47,7 +47,7 @@ fi
 echo "Creating directories for unypkg under /uny."
 mkdir -p /uny/pkg/unypkg /uny/etc/uny /uny/tmp /uny/dev /uny/proc /uny/sys /uny/run /uny/git
 mkdir -p /uny/uny/paths /uny/uny/root /uny/usr/bin
-mkdir -p /etc/uny /opt/uny
+mkdir -p /etc/uny
 ln -sfn /git /uny/uny/git
 ln -sfn /pkg /uny/uny/pkg
 #ln -sfn /uny/etc /etc/uny
