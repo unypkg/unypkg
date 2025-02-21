@@ -12,7 +12,7 @@ echo "Downloading and installing the universal package manager unypkg."
 # Check to be root
 if [ "$(id -u)" -gt 0 ]; then
     echo "This needs to be run as root user. Not root, exiting..."
-    exit
+    exit 1
 fi
 
 # Check if /uny folder already exists
@@ -27,7 +27,7 @@ for app in wget tar grep sed xz; do
     installed=$?
     if [ ! $installed -eq 0 ]; then
         echo "$app has to be installed. Exiting unypkg installation..."
-        exit
+        exit 1
     fi
 done
 
