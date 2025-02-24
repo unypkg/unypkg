@@ -70,7 +70,7 @@ mkdir -pv /uny/git/unypkg
 ln -sfv /uny/pkg/unypkg/fn /uny/git/unypkg/fn
 
 # Install bash from unypkg with wget and tar only
-if [ "$bash_from_unypkg" = "yes" ] && [ ! -d /uny/pkg/bash ]; then
+if [ ! -d /uny/pkg/bash ] && [ "$bash_from_unypkg" = "yes" ]; then
     echo "Downloading and installing unypkg bash."
     pkg=bash
     get_pkg_release_version_and_download_url
@@ -80,7 +80,8 @@ if [ "$bash_from_unypkg" = "yes" ] && [ ! -d /uny/pkg/bash ]; then
         get_pkg_release_version_and_download_url
         download_and_install
     done
-
+fi
+if [ "$bash_from_unypkg" = "yes" ]; then
     [ -f /bin/bash ] && mv /bin/bash /bin/bash_backup
     ln -sf /uny/pkg/bash/*/bin/bash /bin/uny-bash
     ln -sf /bin/uny-bash /bin/bash
