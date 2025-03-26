@@ -177,7 +177,8 @@ function system_install_packages {
                 if [[ -L $base_dir_and_bin && ! $(readlink "$base_dir_and_bin") == "uny-$basename_bin_item" ]]; then
                     echo "Backing up existing Link to $base_dirname_bin_item/${basename_bin_item}_backup"
                     mv -fv /"$base_dirname_bin_item"/"$basename_bin_item" /"$base_dirname_bin_item"/"$basename_bin_item"_backup
-                elif [[ ! -e $base_dir_and_bin ]]; then
+                fi
+                if [[ ! -e $base_dir_and_bin ]]; then
                     echo "Linking $base_dir_and_bin to /$base_dirname_bin_item/uny-$basename_bin_item"
                     $ln -sfv uny-"$basename_bin_item" /"$base_dirname_bin_item"/"$basename_bin_item"
                 fi
