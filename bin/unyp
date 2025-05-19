@@ -50,6 +50,10 @@ function parse_pkg_options {
         pkg="$pkgopt"
         unset pkgveropt pkgdet1 pkgdet2 pkgdet3
     fi
+
+    if [[ $pkgveropt == "latest" ]]; then
+        pkgveropt=""
+    fi
 }
 
 function install_packages {
@@ -61,9 +65,7 @@ function install_packages {
         if [[ $(wget -S https://github.com/unypkg/"$pkg" -O- 2>&1 | grep -o "HTTP/.*" | sed -e "s|HTTP[^ ]* ||" -e "s|[^0-9].*||") != 200 ]]; then
             echo "${print_indent}unypkg repo https://github.com/unypkg/$pkg does not seem to exist. Aborting." && exit
         fi
-        if [[ $pkgveropt == "latest" ]]; then
-            pkgveropt=""
-        fi
+
         if [[ $pkgveropt == *rdep-* ]]; then
             pkgrdep="$(echo "$pkgveropt" | grep -Eo "rdep.*" | sed -e "s|rdep||" -e "s|_|/|g" -e "s|-| |g")"
             pkgrdeplist="$(for i in $pkgrdep; do echo "$i" | tr -d " "; done)"
@@ -143,7 +145,11 @@ function system_install_packages {
             unyp install "$pkgopt"
         fi
 
-        pkg_base=(/uny/pkg/"$pkg"/*)
+        if [[ -n $pkgveropt ]]; then
+            pkg_base=(/uny/pkg/"$pkg"/"$pkgveropt"*)
+        else
+            pkg_base=(/uny/pkg/"$pkg"/*)
+        fi
 
         if ! ls "${pkg_base[0]}" 1>/dev/null 2>&1; then
             echo "Something went wrong finding the package folder. Aborting."
