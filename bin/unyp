@@ -141,14 +141,15 @@ function system_install_packages {
     packages=("$@")
     for pkgopt in "${packages[@]}"; do
         parse_pkg_options
-        if [[ ! -d /uny/pkg/"$pkg" ]]; then
-            unyp install "$pkgopt"
-        fi
 
         if [[ -n $pkgveropt ]]; then
             pkg_base=(/uny/pkg/"$pkg"/"$pkgveropt"*)
         else
             pkg_base=(/uny/pkg/"$pkg"/*)
+        fi
+
+        if [[ ! -d /uny/pkg/"$pkg" ]]; then
+            unyp install "$pkgopt"
         fi
 
         if ! ls "${pkg_base[0]}" 1>/dev/null 2>&1; then
