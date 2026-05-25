@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # shellcheck disable=1090,1091,2001,2034,2154
 
+[ "$(id -u)" != 0 ] && echo "Not root, you need to be root to run this script. Exiting." && exit
+
 unyp_dir="$(dirname "$(readlink "$0")")"
 unypkg_install_dir="$(
     cd "$unyp_dir/.." || exit
@@ -123,7 +125,10 @@ function install_packages {
         fi
 
         # Add to paths files
-        for usrpath in /uny/pkg/"$pkg"/"$pkgver"/!(vdet|rdep); do
+        for usrpath in /uny/pkg/"$pkg"/"$pkgver"/*; do
+            case "$(basename "$usrpath")" in
+            vdet | rdep) continue ;;
+            esac
             #pkgver="$(echo "$usrpath" | sed -e "s|.*$pkg/||" -e "s|/.*||")"
             pathtype="$(basename "$usrpath")"
             [[ ! -f /uny/uny/paths/$pathtype ]] && touch /uny/uny/paths/"$pathtype"
