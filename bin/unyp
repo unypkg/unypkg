@@ -204,16 +204,25 @@ function list_packages {
     ls /uny/pkg/*
 }
 
-if [[ $1 =~ (^i$|^inst$|^install$) ]]; then
+case "$1" in
+
+i | inst | install)
     shift
     install_packages "$@"
-elif [[ $1 =~ (^si$|^sysi$|^sysinst$|^system-install$) ]]; then
+    ;;
+si | sysi | sysinst | system-install)
     shift
     system_install_packages "$@"
-elif [[ $1 =~ (^l$|^ls$|^list$) ]]; then
+    ;;
+l | ls | list)
+    shift # Added shift here too, assuming list_packages handles remaining args like the others
     list_packages "$@"
-elif [[ $1 =~ (^uu$|^upduny$|^update-unypkg$) ]]; then
+    ;;
+uu | upduny | update-unypkg)
     update_unypkg
-else
+    ;;
+*)
     print_help_unyp
-fi
+    ;;
+
+esac
