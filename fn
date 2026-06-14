@@ -320,11 +320,13 @@ function cleanup_verbose_off_timing_end {
 #############################################################################################################################
 ### Stripping and packaging functions
 function binary_stripping {
+    set +x
     executables="$(find /uny/pkg/"$pkgname"/"$pkgver" -executable -type f)"
     for i in $executables; do
         echo "stripping: $i"
         strip --strip-unneeded $i
     done
+    set -x
 }
 
 function github_release {
