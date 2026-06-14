@@ -200,6 +200,19 @@ function system_install_packages {
     done
 }
 
+function remove_packages {
+    parameters=("$@")
+    for pkgopt in "${parameters[@]}"; do
+        parse_pkg_options
+
+        if [[ -d /uny/pkg/"$pkg" ]]; then
+            rm -rfv /uny/pkg/"$pkg"/"$pkgveropt"*
+        else
+            echo "Package $pkg could not be found and nothing was deleted."
+        fi
+    done
+}
+
 function list_packages {
     ls /uny/pkg/*
 }
@@ -213,6 +226,10 @@ i | inst | install)
 si | sysi | sysinst | system-install)
     shift
     system_install_packages "$@"
+    ;;
+d | rm | ui | del | delete | remove | uninst | uninstall)
+    shift
+    remove_packages "$@"
     ;;
 l | ls | list)
     shift # Added shift here too, assuming list_packages handles remaining args like the others
