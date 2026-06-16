@@ -309,7 +309,7 @@ function dependencies_file_and_unset_vars {
 }
 
 function cleanup_verbose_off_timing_end {
-    rm -rf /sources/"$pkgname"*"$pkgver"
+    # rm -rf /sources/"$pkgname"*"$pkgver"
     shopt -u nocaseglob
     duration=$SECONDS
     echo "$((duration / 60)) minutes and $((duration % 60)) seconds elapsed."
