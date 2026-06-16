@@ -15,7 +15,6 @@ update_unypkg() {
     ln -sf "$unypkg_install_dir"/bin/unyc /bin/unyc
     if [ "$update_success" = 0 ]; then
         echo "Successfully updated unypkg."
-        exit 0
     else
         echo "Something went wrong, unypkg did not update right."
         exit 1

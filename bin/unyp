@@ -237,6 +237,7 @@ l | ls | list)
     ;;
 uu | upduny | update-unypkg)
     update_unypkg
+    exit 0
     ;;
 *)
     print_help_unyp
