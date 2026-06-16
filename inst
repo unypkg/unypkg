@@ -45,13 +45,14 @@ fi
 
 # Create directories and symlinks
 echo "Creating directories for unypkg under /uny."
-mkdir -p /uny/pkg/unypkg /uny/etc/uny /uny/tmp /uny/dev /uny/proc /uny/sys /uny/run /uny/git
+mkdir -p /uny/pkg/unypkg /uny/etc /uny/tmp /uny/dev /uny/proc /uny/sys /uny/run /uny/git
 mkdir -p /uny/uny/paths /uny/uny/root /uny/usr/bin
-mkdir -p /etc/uny
-ln -sfn /git /uny/uny/git
-ln -sfn /pkg /uny/uny/pkg
-#ln -sfn /uny/etc /etc/uny
-#ln -sfn /etc /uny/etc/uny
+
+ln -sfn /uny/etc /etc/uny
+
+for dir in pkg git etc; do # For the unyc uny's chroot environment
+    ln -sfn /"$dir" /uny/uny/"$dir"
+done
 
 fn_sh="$(wget -q https://raw.githubusercontent.com/unypkg/unypkg/refs/heads/release/fn_sh -O- | tac | tac)"
 eval "$fn_sh"
