@@ -147,10 +147,9 @@ nogroup:x:65534:
 EOF
 fi
 
-if [ ! -f /uny/usr/bin/env ]; then
-    mkdir -p /uny/usr/bin
-    ln -s /usr/bin /uny/bin
-    ln -s /uny/pkg/coreutils/*/bin/env /uny/usr/bin/env
+if [ ! -x /uny/usr/bin/env ]; then
+    ln -sf /usr/bin /uny/
+    ln -sf /uny/pkg/coreutils/*/bin/env /uny/usr/bin/env
     tee /uny/usr/bin/bash >/dev/null <<'EOF'
 #!/usr/bin/env bash 
 exec bash "$@"
